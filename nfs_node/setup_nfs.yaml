@@ -23,8 +23,8 @@
        state: started
        enabled: yes
 
-   - name: 4. 설정 변경사항 적용 (exports- ra)
-     command: exports -ra
+   - name: 4. 설정 변경사항 적용 (exportfs- ra)
+     command: exportfs -ra
      when: exports_result.changed
 
    - name: 5. NFS 서비스 재시작
