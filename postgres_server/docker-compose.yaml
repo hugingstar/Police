@@ -15,3 +15,8 @@ services:
       POSTGRES_PASSWORD: "@419lab@"
       POSTGRES_DB: trade
     restart: always
+  
+  networks:
+    trade_kospi_network:
+      name: trade_kospi_network
+      external: true
