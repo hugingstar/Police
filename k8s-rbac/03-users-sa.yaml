@@ -1,0 +1,76 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: user-lys
+  namespace: default
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: user-oit
+  namespace: default
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: user-jjh
+  namespace: default
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: user-kjs
+  namespace: default
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: user-lys-binding
+subjects:
+- kind: ServiceAccount
+  name: user-lys
+  namespace: default
+roleRef:
+  kind: ClusterRole
+  name: team-developer-role
+  apiGroup: rbac.authorization.k8s.io 
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: user-oit-binding
+subjects:
+- kind: ServiceAccount
+  name: user-oit
+  namespace: default
+roleRef:
+  kind: ClusterRole
+  name: team-developer-role
+  apiGroup: rbac.authorization.k8s.io 
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: user-jjh-binding
+subjects:
+- kind: ServiceAccount
+  name: user-jjh
+  namespace: default
+roleRef:
+  kind: ClusterRole
+  name: team-developer-role
+  apiGroup: rbac.authorization.k8s.io 
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: user-kjs-binding
+subjects:
+- kind: ServiceAccount
+  name: user-kjs
+  namespace: default
+roleRef:
+  kind: ClusterRole
+  name: team-developer-role
+  apiGroup: rbac.authorization.k8s.io 
+---

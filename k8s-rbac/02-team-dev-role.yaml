@@ -1,0 +1,24 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: team-developer-role
+rules:
+  # 1. 모든 일반 리소스(Pod, SVC, Deploy 등)에 대한 모든 권한 허용 (삭제 포함)
+  - apiGroups: ["", "apps", "batch", "networking.k8s.io"]
+    resources: ["pods", "services", "deployments", "replicasets", "statefulsets", "ingresses", "jobs", "cronjobs", "secrets", "configmaps", "persistentvolumeclaims", "persistentvolumes"]
+    verbs: ["*"] 
+
+	# 2. 스토리지 클래스 조회 (스토리지 그룹 분리)
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["storageclasses"]
+    verbs: ["get", "list", "watch"] # 생성/삭제는 인프라 담당자 권한으로 보호
+    
+  # 2. 컨테이너 내부 접속 (디버깅용) 
+  - apiGroups: [""]
+    resources: ["pods/exec"]
+    verbs: ["create"]
+
+  # 3. 중요 인프라 자원은 '조회'만 가능 (수정/삭제 불가)
+  - apiGroups: ["", "scheduling.k8s.io"]
+    resources: ["nodes", "namespaces", "priorityclasses", "runtimeclasses"]
+    verbs: ["get", "list", "watch"]
