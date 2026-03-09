@@ -9,6 +9,14 @@
   tasks:
     - name: "Airflow directory architecture"
       ansible.builtin.file:
+        path: "{{ dest_path }}"
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: "Airflow directory architecture"
+      ansible.builtin.file:
         path: "{{ dest_path }}/{{ item }}"
         state: directory
         owner: root

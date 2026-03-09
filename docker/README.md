@@ -57,17 +57,5 @@ ansible-playbook airflow_install.yaml --syntax-check
 - rocky 그룹에 해당하는 호스트에 일괄 적용
 
 ```
-ansible-playbook docker_install.yaml -k
-```
-
-- 설치 완료 시 확인 방법
-
-```
-docker --version
-```
-
-- 작동 상태 확인 방법
-
-```
-systemctl status docker  
+ansible-playbook airflow_install.yaml -k
 ```
