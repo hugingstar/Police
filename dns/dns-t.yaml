@@ -1,0 +1,11 @@
+---
+- name: DNS 서버 완전 자동화 구축 
+  hosts: dns_servers
+  become: yes
+  tasks:
+    - name: 1. 기존 환경 정리
+      shell: |
+        dnf remove -y bind-chroot
+        cp /etc/named.conf /etc/named.conf.bak
+      ignore_errors: yes
+---
