@@ -5,7 +5,9 @@
   tasks:
     - name: 1. BIND 및 유틸리티 설치
       dnf:
-        name: bind and bind-utils
+        name: 
+         - bind 
+         - bind-utils
         state: present
 
     - name: 2. 백업파일 생성
