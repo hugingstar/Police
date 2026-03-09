@@ -8,4 +8,3 @@
         dnf remove -y bind-chroot
         cp /etc/named.conf /etc/named.conf.bak
       ignore_errors: yes
----
