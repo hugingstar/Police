@@ -1,0 +1,39 @@
+- name: Prepare Kernel and Network for Kubernetes (Ubuntu 22.04)
+  hosts: nodes
+  become: true
+  tasks:
+    - name: Gather facts
+      ansible.builtin.setup:
+    
+    - name: Create modules-load configuration for k8s
+      ansible.builtin.copy:
+        dest: /etc/modules-load.d/k8s.conf
+        content: |
+          overlay
+          br_netfilter
+        mode: '0644'
+    
+    - name: Load overlay and br_netfilter modules
+      community.general.modprobe:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - overlay
+        - br_netfilter
+    
+    - name: Set sysctl parameters for k8s
+      ansible.posix.sysctl:
+        name: "{{ item.key }}"
+        value: "{{ item.value }}"
+        state: present
+        sysctl_file: /etc/sysctl.d/k8s.conf
+        reload: yes
+      loop: 
+        - { key: 'net.bridge.bridge-nf-call-iptables', value: '1' }
+        - { key: 'net.bridge.bridge-nf-call-ip6tables', value: '1' }
+        - { key: 'net.ipv4.ip_forward', value: '1' }
+    - name: Verify kernel parameters
+      ansible.builtin.command: sysctl net.ipv4.ip_forward
+      register: sysctl_check
+      changed_when: false
+      failed_when: "'1' not in sysctl_check.stdout"

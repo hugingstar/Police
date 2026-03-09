@@ -1,0 +1,25 @@
+- name: Install Calico Networing 
+  hosts: master_nodes
+  become: true
+  tasks:
+    - name: Download Calico manifest
+      ansible.builtin.get_url:
+        url: https://raw.githubusercontent.com/projectcalico/calico/v3.27.0/manifests/calico.yaml
+        dest: /tmp/calico.yaml
+        mode: '0644'
+
+    - name: Set pod Network CIDR in Calico manifest
+      ansible.builtin.replace:
+        path: /tmp/calico.yaml 
+        regexp: '192.168.0.0/16'
+        replace: '192.168.0.0/16'
+    
+    - name: Apply Calico manifest
+      ansible.builtin.command: kubectl apply -f /tmp/calico.yaml
+      environment:
+        KUBECONFIG: /root/.kube/config
+      register: calico_result 
+
+    - name: Show Calico installation outout
+      ansible.builtin.debug:
+        msg: "{{ calico_result.stdout_lines }}"

@@ -1,0 +1,56 @@
+- name: Initialize Kubernetes Cluster
+  hosts: master_nodes
+  become: true
+  vars:
+    master_ip: "10.5.0.200"
+    pod_network_cidr: "192.168.0.0/16"
+
+  tasks:
+    - name: Reset kubeadm if already initialized
+      ansible.builtin.command: kubeadm reset -f 
+      ignore_errors: true 
+      
+    - name: Initialize the Kubernetes cluster
+      ansible.builtin.command: >
+        kubeadm init
+        --pod-network-cidr=192.168.0.0/16
+        --apiserver-advertise-address={{ ansible_host }}
+        --cri-socket=unix:///run/containerd/containerd.sock
+      register: kubeadm_init_output
+      failed_when:
+        - kubeadm_init_output.rc != 0
+        - '"already exists" not in kubeadm_init_output.stderr'
+
+    - name: Create .kube directory for repository
+      ansible.builtin.file:
+        path: /root/.kube
+        state: directory
+        mode: '0755'
+    
+    - name: Copy admin.conf to root's kube config
+      ansible.builtin.copy:
+        src: /etc/kubernetes/admin.conf
+        dest: /root/.kube/config
+        remote_src: yes
+        owner: root
+        group: root
+        mode: '0600'
+
+    - name: Wait for API Server to be ready
+      ansible.builtin.pause:
+        seconds: 20
+
+    - name: Generate join command
+      ansible.builtin.shell: kubeadm token create --print-join-command
+      register: join_command_raw
+
+    - name: Save join command to local file for workers
+      ansible.builtin.copy:
+        content: "{{ join_command_raw.stdout }}"
+        dest: "../scripts/join_command.sh"
+      delegate_to: localhost
+      become: false
+
+    - name: Output join command to console
+      ansible.builtin.debug:
+        msg: "Join command is: {{ join_command_raw.stdout }}"

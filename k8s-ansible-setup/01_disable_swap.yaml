@@ -1,0 +1,19 @@
+- name: Disable all nodes swap memory
+  hosts: nodes
+  become: true
+  tasks:
+    - name: Gather facts
+      ansible.builtin.setup:
+
+    - name: Disable swap immediately 
+      ansible.builtin.command: swapoff -a
+      when: ansible_swaptotal_mb > 0
+
+    - name: Disable swap in /etc/fstab
+      ansible.builtin.mount:
+        name: "{{ item }}"
+        fstype: swap
+        state: absent
+      with_items:
+        - none
+        - swap 
