@@ -1,0 +1,63 @@
+---
+- name: Install Docker on Rocky Linux 10
+  hosts: rocky
+  become: yes
+  vars:
+    docker_packages:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-buildx-plugin
+      - docker-compose-plugin
+
+  tasks:
+    - name: Remove old versions of Docker (if any)
+      dnf:
+        name:
+          - docker
+          - docker-client
+          - docker-client-latest
+          - docker-common
+          - docker-latest
+          - docker-latest-logrotate
+          - docker-latest-logrotate
+          - docker-logrotate
+          - docker-engine
+        state: absent
+
+    - name: Install yum-utils
+      dnf:
+        name: yum-utils
+        state: present
+
+    - name: Add Docker repository
+      get_url:
+        url: https://download.docker.com/linux/centos/docker-ce.repo
+        dest: /etc/yum.repos.d/docker-ce.repo
+        mode: '0644'
+
+    - name: Install Docker engine and plugins
+      dnf:
+        name: "{{ docker_packages }}"
+        state: present
+        update_cache: yes
+
+    - name: Start and enable Docker service
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Add current user to docker group
+      user:
+        # ansible_user가 정의되지 않았을 경우를 대비해 확실한 변수 사용 권장
+        name: "{{ ansible_user | default(ansible_env.USER) | default('rocky') }}"
+        groups: docker
+        append: yes
+      notify: Restart Docker
+
+  handlers:
+    - name: Restart Docker
+      systemd:
+        name: docker
+        state: restarted
