@@ -3,26 +3,23 @@
   hosts: db_servers
   become: yes
   vars:
-    db_root_pw: "root"      # 가이드에 명시된 root 비번
+    db_root_pw: "root"      
     db_name: "userdb"
     db_user: "root"
     db_ip: "10.22.0.4"
 
   tasks:
-    ## (1) MariaDB 패키지 설치
     - name: 1. MariaDB 관련 패키지 설치 (mariadb-server, python3-pymysql)
       dnf:
         name: [mariadb-server, mariadb, python3, python3-pip, python3-devel, gcc, python3-PyMySQL]
         state: present
 
-    ## (2) MariaDB 서비스 시작 및 활성화
     - name: 2. MariaDB 서비스 시작 및 활성화
       service:
         name: mariadb
         state: started
         enabled: yes
 
-    ## (3) MariaDB 한글 설정 (가이드 참고사항 반영)
     - name: 3. MariaDB 한글 인코딩 설정 (/etc/my.cnf.d/mariadb-server.cnf)
       blockinfile:
         path: /etc/my.cnf.d/mariadb-server.cnf
@@ -33,33 +30,28 @@
           character-set-server=utf8
           collation-server=utf8_general_ci
 
-    - name: 3-1. 설정 적용을 위한 서비스 재시작
+    - name: 4. 설정 적용을 위한 서비스 재시작
       service:
         name: mariadb
         state: restarted
 
-    ## (4) MariaDB 보안 설정 (보안 가이드 내용 반영)
-    # 앤시블에서는 명령어를 직접 치는 것보다 모듈을 쓰는 것이 안전하지만, 
-    # 가이드 순서를 존중하여 초기 root 비밀번호 설정을 수행합니다.
-    - name: 4. MariaDB root 비밀번호 설정
+    - name: 5. MariaDB root 비밀번호 설정
       ignore_errors: yes
       shell: |
         mariadb -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '{{ db_root_pw }}'; FLUSH PRIVILEGES;"
 
-    ## (5) Python 자동화 모듈 실행 환경 준비
-    - name: 5. 필요한 Python 라이브러리 설치 (pip)
+    - name: 6. 필요한 Python 라이브러리 설치 (pip)
       pip:
         name: [pymysql, sqlalchemy, cryptography, python-multipart]
         state: present
 
-    ## (6) SSH 및 SCP 수신 환경 준비
-    - name: 6. SSH 포트 확인 및 서비스 보장
+    - name: 7. SSH 포트 확인 및 서비스 보장
       service:
         name: sshd
         state: started
         enabled: yes
 
-    - name: 7. 배포 경로 생성 (/var/www/html)
+    - name: 8. 배포 경로 생성 (/var/www/html)
       file:
         path: /var/www/html
         state: directory
