@@ -59,6 +59,9 @@ vi /etc/ansible/hosts
 - Well-known host 지정
 
 ```
+# 필요시
+export ANSIBLE_HOST_KEY_CHECKING=False
+
 ssh-keyscan -H 192.168.0.100 192.168.0.101 >> ~/.ssh/known_hosts
 ```
 
