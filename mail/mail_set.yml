@@ -1,28 +1,28 @@
 ---
-- name: 메일 서버(Postfix/Dovecot) 자동 구축
+- name: 메일 서버 자동 구축
   hosts: mail_servers
   become: yes
   tasks:
-    - name: 1. DNS 설정 (방금 만든 DNS 서버 바라보기)
+    - name: 1. DNS 설정
       copy:
         dest: /etc/resolv.conf
-        content: "nameserver 192.168.17.3"
+        content: |
+          nameserver 10.22.0.3
 
     - name: 2. 메일 패키지 설치
       dnf:
-        name: [postfix, dovecot, mailx]
+        name: [dovecot, sendmail, sendmail-cf, m4]
         state: present
 
-    - name: 3. Postfix 설정 및 시작
+    - name: 3. Sendmail 설정 업데이트
       shell: |
-        postconf -e "myhostname = mail.kojel.com"
-        postconf -e "mydomain = kojel.com"
-        postconf -e "myorigin = \$mydomain"
-        postconf -e "inet_interfaces = all"
-        systemctl restart postfix
-        systemctl enable postfix
+        sed -i "s/Addr=127.0.0.1/Addr=0.0.0.0/g" /etc/mail/sendmail.mc
+        m4 /etc/mail/sendmail.mc > /etc/mail/sendmail.cf
+        echo "kojel.com" >> /etc/mail/local-host-names
+      args:
+        executable: /bin/bash
 
-    - name: 4. Dovecot 설정 및 시작
+    - name: 4. Dovecot 설정
       copy:
         dest: /etc/dovecot/dovecot.conf
         content: |
@@ -30,9 +30,16 @@
           disable_plaintext_auth = no
           ssl = no
           mail_location = mbox:~/mail:INBOX=/var/mail/%u
+          mail_privileged_group = mail
+        owner: root
+        group: root
+        mode: '0644'
 
-    - name: 5. Dovecot 서비스 시작
+    - name: 5. 서비스 시작 및 활성화
       service:
-        name: dovecot
+        name: "{{ item }}"
         state: restarted
         enabled: yes
+      with_items:
+        - sendmail
+        - dovecot

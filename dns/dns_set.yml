@@ -1,44 +1,49 @@
 ---
-- name: DNS 서버(BIND) 자동 구축
+- name: DNS 서버 완전 자동화 구축 (패키지부터 레코드까지)
   hosts: dns_servers
   become: yes
   tasks:
-    - name: 1. 방화벽 및 SELinux 끄기
+    - name: 1. 기존 환경 정리 (chroot 삭제 및 기존 파일 제거)
       shell: |
-        systemctl stop firewalld
-        systemctl disable firewalld
-        setenforce 0
-        sed -i 's/SELINUX=enforcing/SELINUX=disabled/' /etc/selinux/config
+        dnf remove -y bind-chroot
+        rm -f /etc/named.conf /var/named/kojel.com.dns
+      ignore_errors: yes
 
-    - name: 2. BIND 패키지 설치
+    - name: 2. BIND 및 유틸리티 설치
       dnf:
-        name: [bind, bind-chroot]
+        name: [bind, bind-utils]
         state: present
 
-    - name: 3. named.conf 설정 (Listen Any, DNSSEC No)
+    - name: 3. named.conf 자동 생성
       copy:
         dest: /etc/named.conf
         content: |
           options {
               listen-on port 53 { any; };
+              directory "/var/named";
               allow-query { any; };
               recursion yes;
               dnssec-validation no;
-              directory "/var/named";
           };
-          include "/etc/named.rfc1912.zones";
+          include "/etc/named.kojel.zones";
+        owner: root
+        group: named
+        mode: '0644'
 
-    - name: 4. Zone 파일 등록 (kojel.com)
-      blockinfile:
-        path: /etc/named.rfc1912.zones
-        block: |
+    - name: 4. Zone 설정 자동 추가
+      copy:
+        dest: /etc/named.kojel.zones
+        content: |
           zone "kojel.com" IN {
               type master;
               file "kojel.com.dns";
               allow-update { none; };
           };
+        owner: root
+        group: named
+        mode: '0644'
 
-    - name: 5. 도메인 상세 레코드 생성 (A, MX 레코드)
+    - name: 5. 도메인 레코드 파일(kojel.com.dns) 자동 생성
       copy:
         dest: /var/named/kojel.com.dns
         owner: root
@@ -49,11 +54,11 @@
           @ IN SOA ns1.kojel.com. root.kojel.com. ( 0 1D 1H 1W 3H )
           @ IN NS  ns1.kojel.com.
           @ IN MX 10 mail.kojel.com.
-          ns1  IN A  192.168.17.3
-          www  IN A  192.168.17.4
-          mail IN A  192.168.17.5
+          ns1  IN A  10.22.0.3
+          www  IN A  10.22.0.4
+          mail IN A  10.22.0.2
 
-    - name: 6. 서비스 시작
+    - name: 6. 서비스 시작 및 자동 재시작 활성화
       service:
         name: named
         state: restarted
