@@ -14,7 +14,7 @@
        path: "/nfs_k8s/{{ item }}"
        state: directory
        mode: '0777'
-     loop: [ 'static', 'was', 'db', 'config', 'monitoring']
+     loop: [ 'static', 'was', 'db', 'config', 'monitoring', 'airflow']
 
    - name: 2. /etc/exports 파일에 설정 추가
      lineinfile:
