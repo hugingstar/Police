@@ -1,5 +1,5 @@
 ---
-- name: 여러 하위 디렉터리 일괄 생성
+- name: Airflow installation
   hosts: yslee
   become: yes
   vars:
@@ -7,6 +7,11 @@
     airflow_version: "3.1.7" 
 
   tasks:
+    - name: "Init"
+      ansible.builtin.file:
+        path: "{{ dest_path }}"
+        state: absent  # 먼저 삭제
+  
     - name: "Airflow directory architecture"
       ansible.builtin.file:
         path: "{{ dest_path }}"
@@ -23,15 +28,16 @@
         group: root
         mode: '0755'
       with_items:
+        - 'dags'
         - 'logs'
-        - 'scripts'
-        - 'configs'
-    
+        - 'plugins'
+      
     - name: "Get airflow docker-compose.yaml file"
       ansible.builtin.get_url:
         url: "https://airflow.apache.org/docs/apache-airflow/{{ airflow_version }}/docker-compose.yaml"
         dest: "{{ dest_path }}/docker-compose.yaml"
         mode: '0644'
+        force: no
     
     - name: "Create .env file with AIRFLOW_UID"
       ansible.builtin.shell: |
