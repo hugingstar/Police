@@ -1,4 +1,4 @@
-# Infra installation automation for application
+# Infra installation automation for airflow
 
 - Ansible 사용하여 Docker/Airflow 설치 과정을 자동화한다.
 - 설치할 영역을 설정합니다.

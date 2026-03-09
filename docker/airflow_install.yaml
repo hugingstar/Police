@@ -1,6 +1,6 @@
 ---
 - name: Airflow installation
-  hosts: yslee
+  hosts: airflow
   become: yes
   vars:
     dest_path: "/root/Cronjob"

@@ -1,6 +1,6 @@
 ---
 - name: Install Docker on Rocky Linux 10
-  hosts: yslee
+  hosts: airflow
   become: yes
   vars:
     docker_packages:
