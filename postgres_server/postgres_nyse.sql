@@ -8,6 +8,6 @@ CREATE TABLE IF NOT EXISTS "nyse_log" (
                     Close TEXT,
                     Volume TEXT,
                     Change TEXT,
-                    Code TEXT,
+                    Symbol TEXT,
                     Name TEXT
                 );
