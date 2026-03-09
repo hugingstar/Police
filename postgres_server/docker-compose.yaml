@@ -1,0 +1,17 @@
+services:
+  pstg_db_kospi:
+    image: postgres:17.7
+    container_name: postgres_trade
+    ports:
+      - "5435:5432"
+    networks:
+      - trade_kospi_network
+    volumes:
+      - ./postgres_kospi.sql:/docker-entrypoint-initdb.d/init.sql
+      - /root/Data/KOSPI/Database:/var/lib/postgresql/data
+    environment:
+      TZ: Asia/Seoul
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: "@419lab@"
+      POSTGRES_DB: trade
+    restart: always
