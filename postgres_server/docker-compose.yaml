@@ -16,7 +16,7 @@ services:
       POSTGRES_DB: trade
     restart: always
   
-  networks:
-    trade_kospi_network:
-      name: trade_kospi_network
-      external: true
+networks:
+  trade_kospi_network:
+    name: trade_kospi_network
+    external: true
