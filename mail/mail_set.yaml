@@ -1,14 +1,4 @@
 ---
-- name: 인벤토리 업데이트 (해당 서버 그룹)
-  hosts: localhost
-  become: yes
-  tasks:
-    - name: /etc/ansible/hosts에 IP 등록
-      lineinfile:
-        path: /etc/ansible/hosts
-        line: "10.22.0.2" 
-        insertafter: '^\[mail_servers\]'  
-        state: present
 - name: 메일 서버 자동 구축
   hosts: mail_servers
   become: yes

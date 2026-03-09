@@ -1,14 +1,4 @@
 ---
-- name: 인벤토리 업데이트 (해당 서버 그룹)
-  hosts: localhost
-  become: yes
-  tasks:
-    - name: /etc/ansible/hosts에 IP 등록
-      lineinfile:
-        path: /etc/ansible/hosts
-        line: "10.22.0.5" 
-        insertafter: '^\[db_servers\]'  # 그룹명에 맞게 수정 (예: [db-servers])
-        state: present
 - name: MariaDB 서버 설치 및 Python 자동화 환경 구축
   hosts: db_servers
   become: yes

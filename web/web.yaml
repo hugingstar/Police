@@ -1,14 +1,4 @@
 ---
-- name: 인벤토리 업데이트 (Web Server)
-  hosts: localhost
-  become: yes
-  tasks:
-    - name: /etc/ansible/hosts에 web_servers 그룹 및 IP 등록
-      lineinfile:
-        path: /etc/ansible/hosts
-        line: "10.22.0.4"
-        insertafter: '^\[web_servers\]'
-        state: present
 - name: Web Server (Apache & Python FastAPI) 완벽 구성
   hosts: web_servers
   become: yes
