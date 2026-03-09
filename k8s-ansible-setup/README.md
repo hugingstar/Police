@@ -69,7 +69,7 @@ ansible-playbook playbooks/*.yaml
 
 특정 단계의 로그를 확인하거나 개별적으로 실행하고 싶을 때 사용합니다. (개별 실행 권장)
 
-1. **OS 커널 및 환경 최적화** 
+**(1) OS 커널 및 환경 최적화** 
     
     ```bash
     ansible-playbook playbooks/01-disable-swap.yaml
@@ -88,7 +88,7 @@ ansible-playbook playbooks/*.yaml
     ```
 <br>
 
-2. **컨테이너 런타임 설치 (Script 연동)**
+**(2) 컨테이너 런타임 설치 (Script 연동)**
     
     ```bash
     # /scripts/install-docker.sh가 각 노드에서 자동 실행됨
@@ -104,11 +104,11 @@ ansible-playbook playbooks/*.yaml
     ```
 <br>
 
-3. **k8s 바이너리 설치 및 마스터 초기화** 
+**(3) k8s 바이너리 설치 및 마스터 초기화** 
     
     ```bash
-    ansible-playbook playbooks/04_k8s-binary-setup.yaml
-    ansible-playbook playbooks/05_k8s-master-init.yaml
+    ansible-playbook playbooks/04-k8s-binary-setup.yaml
+    ansible-playbook playbooks/05-k8s-master-init.yaml
     ```
     
     - **실행 확인**
@@ -124,11 +124,11 @@ ansible-playbook playbooks/*.yaml
     ```
 <br>
 
-4. **네트워크(CNI) 배포 및 워커 노드 조인** 
+**(4) 네트워크(CNI) 배포 및 워커 노드 조인** 
     
     ```bash
     ansible-playbook playbooks/06-install-calico.yaml
-    ansible-playbook playbooks/07-k8s_worker-join.yaml
+    ansible-playbook playbooks/07-k8s-worker-join.yaml
     ```
     
     - **실행 확인**

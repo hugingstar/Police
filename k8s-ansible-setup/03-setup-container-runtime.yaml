@@ -6,7 +6,7 @@
       ansible.builtin.setup:
 
     - name: Run Docker/Containerd installation script
-      ansible.builtin.script: ../scripts/install_docker.sh 
+      ansible.builtin.script: ../scripts/install-docker.sh 
       args:
         creates: /usr/bin/containerd
 
