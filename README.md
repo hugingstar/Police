@@ -5,7 +5,7 @@
 
 ## 📌 개요
 
-이 모듈은 수동 설치의 번거로움을 제거하고, 코드 기반(IaC)으로 일관된 쿠버네티스 실습 환경을 구축하기 위해 제작되었습니다. 해당 모듈은 쿠버네티스에서 제공하는 **Calico CNI**를 설치하며, 다른 플러그인으로 대체 하고자 할 경우 06_install_calico.yaml 파일을 수정해야 합니다. 
+이 모듈은 수동 설치의 번거로움을 제거하고, 코드 기반(IaC)으로 일관된 쿠버네티스 실습 환경을 구축하기 위해 제작되었습니다. 해당 모듈은 쿠버네티스에서 제공하는 **Calico CNI**를 설치하며, 다른 플러그인으로 대체 하고자 할 경우 06-install-calico.yaml 파일을 수정해야 합니다. 
 <br>
 
 ## 🛠 멱등성 및 안정성 (Idempotency)
@@ -21,15 +21,15 @@
 ```
 .
 ├── playbooks/
-│   ├── 01_disable_swap.yaml            # k8s cluster 스왑 메모리 삭제 
-│   ├── 02_sysctl_k8s_config.yaml       # Kernel 모듈 로드 및 네트워크 설정
-│   ├── 03_setup_container_runtime.yaml # 마스터 초기화 및 조인 토큰 관리
-|   ├── 04_k8s_binary_setup.yaml        # kubeadm, kubelet, kubectl 설치 
-|   ├── 05_k8s_master_init.yaml         # 마스터 노드 초기화 
-|   ├── 06_install_calico.yaml          # calico (CNI) 설치 
-|   └── 07_k8s_worker_join.yaml         # 워커 노드 조인  
+│   ├── 01-disable-swap.yaml            # k8s cluster 스왑 메모리 삭제 
+│   ├── 02-sysctl-k8s-config.yaml       # Kernel 모듈 로드 및 네트워크 설정
+│   ├── 03-setup-container-runtime.yaml # 마스터 초기화 및 조인 토큰 관리
+|   ├── 04-k8s-binary-setup.yaml        # kubeadm, kubelet, kubectl 설치 
+|   ├── 05-k8s-master-init.yaml         # 마스터 노드 초기화 
+|   ├── 06-install-calico.yaml          # calico (CNI) 설치 
+|   └── 07-k8s-worker-join.yaml         # 워커 노드 조인  
 ├── scripts/
-│   └── install_docker.sh   # docker, containerd 설치 스크립트 
+│   └── install-docker.sh   # docker, containerd 설치 스크립트 
 ├── /etc/ansible/           # [System Path] Ansible 환경 설정 경로
 │   └── hosts               # 마스터/워커 노드 연결 정보 (IP 설정)
 └── README.md
@@ -54,7 +54,7 @@
 
 파일 번호 순서(01~07)에 따라 설정을 진행합니다. 
 
-03_setup_container_runtime.yaml 실행 시 내부적으로 /scripts/install_docker.sh를 호출하여 Docker 및 Continer를 설치합니다. 따라서 파일 구조를 그대로 유지해야 합니다. 
+03-setup-container-runtime.yaml 실행 시 내부적으로 /scripts/install-docker.sh를 호출하여 Docker 및 Continer를 설치합니다. 따라서 파일 구조를 그대로 유지해야 합니다. 
 <br>
 
 ### **2-1. 전체 일괄 실행**
@@ -72,8 +72,8 @@ ansible-playbook playbooks/*.yaml
 1. **OS 커널 및 환경 최적화** 
     
     ```bash
-    ansible-playbook playbooks/01_disable_swap.yaml
-    ansible-playbook playbooks/02_sysctl_k8s_config.yaml
+    ansible-playbook playbooks/01-disable-swap.yaml
+    ansible-playbook playbooks/02-sysctl-k8s-config.yaml
     ```
     
     - **실행 확인**
@@ -91,8 +91,8 @@ ansible-playbook playbooks/*.yaml
 2. **컨테이너 런타임 설치 (Script 연동)**
     
     ```bash
-    # /scripts/install_docker.sh가 각 노드에서 자동 실행됨
-    ansible-playbook playbooks/03_setup_container_runtime.yaml
+    # /scripts/install-docker.sh가 각 노드에서 자동 실행됨
+    ansible-playbook playbooks/03-setup-container-runtime.yaml
     ```
     
     - **실행 확인**
@@ -107,8 +107,8 @@ ansible-playbook playbooks/*.yaml
 3. **k8s 바이너리 설치 및 마스터 초기화** 
     
     ```bash
-    ansible-playbook playbooks/04_k8s_binary_setup.yaml
-    ansible-playbook playbooks/05_k8s_master_init.yaml
+    ansible-playbook playbooks/04_k8s-binary-setup.yaml
+    ansible-playbook playbooks/05_k8s-master-init.yaml
     ```
     
     - **실행 확인**
@@ -127,8 +127,8 @@ ansible-playbook playbooks/*.yaml
 4. **네트워크(CNI) 배포 및 워커 노드 조인** 
     
     ```bash
-    ansible-playbook playbooks/06_install_calico.yaml
-    ansible-playbook playbooks/07_k8s_worker_join.yaml
+    ansible-playbook playbooks/06-install-calico.yaml
+    ansible-playbook playbooks/07-k8s_worker-join.yaml
     ```
     
     - **실행 확인**
