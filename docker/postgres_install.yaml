@@ -1,50 +1,48 @@
 ---
-- name: Install PostgreSQL 17.7
-  hosts: db_servers
+- name: Install PostgreSQL 17.7 on Rocky Linux 9
+  hosts: db_server
   become: yes
   vars:
-    postgres_version: "17"
-    # 특정 마이너 버전까지 명시하려면 패키지 관리자의 버전을 확인해야 합니다.
-    # 보통 '17.7-1.pgdg22.04+1' 형식이나, 여기서는 범용적인 '17' 설치 후 설명을 덧붙입니다.
-    postgres_full_version: "17.7" 
+    # 설치하고자 하는 정확한 버전 명시
+    pg_version: "17"
+    pg_full_version: "17.7"
 
   tasks:
-    - name: 필수 의존성 패키지 설치
-      apt:
+    - name: PostgreSQL PGDG Repository 추가
+      dnf:
+        name: "https://download.postgresql.org/pub/repos/yum/reporpms/EL-9-x86_64/pgdg-redhat-repo-latest.noarch.rpm"
+        state: present
+        disable_gpg_check: yes
+
+    - name: 기본 OS 내장 PostgreSQL 모듈 비활성화 (충돌 방지)
+      shell: "dnf -qy module disable postgresql"
+      ignore_errors: yes
+
+    - name: PostgreSQL {{ pg_full_version }} 서버 및 라이브러리 설치
+      dnf:
+        # 버전 뒤에 -1PGDG.rhel9 등을 붙이지 않아도 dnf가 가용한 패키지 중 17.7을 찾아 설치합니다.
         name:
-          - gnupg2
-          - wget
-          - software-properties-common
-        state: present
-        update_cache: yes
-
-    - name: PostgreSQL 공식 GPG 키 추가
-      apt_key:
-        url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          - "postgresql{{ pg_version }}-server-{{ pg_full_version }}"
+          - "postgresql{{ pg_version }}-{{ pg_full_version }}"
+          - "postgresql{{ pg_version }}-libs-{{ pg_full_version }}"
         state: present
 
-    - name: PostgreSQL 공식 저장소 추가
-      apt_repository:
-        repo: "deb http://apt.postgresql.org/pub/repos/apt/ {{ ansible_distribution_release }}-pgdg main"
-        state: present
+    - name: Initialize clusters (최초 1회)
+      command: "/usr/pgsql-{{ pg_version }}/bin/postgresql-{{ pg_version }}-setup initdb"
+      args:
+        creates: "/var/lib/pgsql/{{ pg_version }}/data/PG_VERSION"
 
-    - name: PostgreSQL {{ postgres_full_version }} 설치
-      apt:
-        name: "postgresql-{{ postgres_version }}={{ postgres_full_version }}*"
-        state: present
-        update_cache: yes
-
-    - name: PostgreSQL 서비스 시작 및 활성화
+    - name: Start PostgreSQL
       systemd:
-        name: postgresql
+        name: "postgresql-{{ pg_version }}"
         state: started
         enabled: yes
 
-    - name: 설치된 버전 확인
+    - name: Version check
       command: psql --version
-      register: pg_version_check
+      register: installed_version
       changed_when: false
 
-    - name: 설치 결과 출력
+    - name: Complete message
       debug:
-        msg: "설치된 버전: {{ pg_version_check.stdout }}"
+        msg: "설치 완료: {{ installed_version.stdout }}"
