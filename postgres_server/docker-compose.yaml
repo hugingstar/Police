@@ -20,7 +20,7 @@ services:
     image: postgres:17.7
     container_name: postgres_kosdaq_trade
     ports:
-      - "5435:5432"
+      - "5436:5432"
     networks:
       - trade_kosdaq_network
     volumes:
@@ -37,7 +37,7 @@ services:
     image: postgres:17.7
     container_name: postgres_nasdaq_trade
     ports:
-      - "5435:5432"
+      - "5437:5432"
     networks:
       - trade_nasdaq_network
     volumes:
@@ -54,7 +54,7 @@ services:
     image: postgres:17.7
     container_name: postgres_nyse_trade
     ports:
-      - "5435:5432"
+      - "5438:5432"
     networks:
       - trade_nyse_network
     volumes:
@@ -67,9 +67,6 @@ services:
       POSTGRES_DB: trade
     restart: always
 
-
-
-  
 networks:
   trade_kospi_network:
     name: trade_kospi_network
