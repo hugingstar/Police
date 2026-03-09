@@ -4,15 +4,11 @@
   become: yes
   vars:
     dest_path: "/root/Cronjob"
-    airflow_version: "2.10.2" 
+    airflow_version: "2.10.2"
+    additional_packages: "finance-datareader pandas numpy psycopg2-binary"
 
   tasks:
-    - name: "Init"
-      ansible.builtin.file:
-        path: "{{ dest_path }}"
-        state: absent  # 먼저 삭제
-  
-    - name: "Airflow directory architecture"
+    - name: "Create airflow directory architecture"
       ansible.builtin.file:
         path: "{{ dest_path }}"
         state: directory
@@ -20,7 +16,7 @@
         group: root
         mode: '0755'
 
-    - name: "Airflow directory architecture"
+    - name: "Airflow directory subdirectories (dags, logs, plugins)"
       ansible.builtin.file:
         path: "{{ dest_path }}/{{ item }}"
         state: directory
@@ -32,20 +28,26 @@
         - 'logs'
         - 'plugins'
       
-    - name: "Get airflow docker-compose.yaml file"
+    - name: "Download official airflow docker-compose.yaml file"
       ansible.builtin.get_url:
         url: "https://airflow.apache.org/docs/apache-airflow/{{ airflow_version }}/docker-compose.yaml"
         dest: "{{ dest_path }}/docker-compose.yaml"
         mode: '0644'
         force: no
     
-    - name: "Create .env file with AIRFLOW_UID"
+    - name: "Create .env file with AIRFLOW_UID and PIP requirements"
       ansible.builtin.shell: |
         echo "AIRFLOW_UID=$(id -u)" > {{ dest_path }}/.env
+        echo "_PIP_ADDITIONAL_REQUIREMENTS='{{ additional_packages }}'" >> {{ dest_path }}/.env
       args:
-        creates: "{{ dest_path }}/.env"
+        executable: /bin/bash
 
-    - name: Install airflow using docker-compose.yaml file
+    - name: "Initialize Airflow database (airflow-init)"
+      ansible.builtin.shell:
+        cmd: "docker compose up airflow-init"
+        chdir: "{{ dest_path }}"
+
+    - name: "Start Airflow services in detached mode"
       ansible.builtin.shell:
         cmd: "docker compose up -d"
         chdir: "{{ dest_path }}"
