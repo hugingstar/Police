@@ -60,6 +60,13 @@ ansible-playbook airflow_install.yaml --syntax-check
 ansible-playbook airflow_install.yaml -k
 ```
 
+- airflow 컨테이너 별도로 삭제 방법
+
+```
+docker rm -f $(docker ps -aq --filter "name=cronjob")
+```
+
+
 ## Postgres installation
 
 - playbook 파일 구문을 체크한다.
