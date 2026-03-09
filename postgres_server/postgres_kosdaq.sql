@@ -1,5 +1,3 @@
-CREATE DATABASE trade;
-
 CREATE TABLE IF NOT EXISTS "kosdaq_log" (
                     Time_stamp TEXT,
                     Open TEXT,

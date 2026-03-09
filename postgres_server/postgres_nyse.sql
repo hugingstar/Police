@@ -1,5 +1,3 @@
-CREATE DATABASE trade;
-
 CREATE TABLE IF NOT EXISTS "nyse_log" (
                     Time_stamp TEXT,
                     Open TEXT,
