@@ -1,0 +1,37 @@
+---
+- name: 여러 하위 디렉터리 일괄 생성
+  hosts: yslee
+  become: yes
+  vars:
+    dest_path: "/root/Cronjob"
+    airflow_version: "3.1.7" 
+
+  tasks:
+    - name: "Airflow directory architecture"
+      ansible.builtin.file:
+        path: "{{ dest_path }}/{{ item }}"
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+      with_items:
+        - 'logs'
+        - 'scripts'
+        - 'configs'
+    
+    - name: "Get airflow docker-compose.yaml file"
+      ansible.builtin.get_url:
+        url: "https://airflow.apache.org/docs/apache-airflow/{{ airflow_version }}/docker-compose.yaml"
+        dest: "{{ dest_path }}/docker-compose.yaml"
+        mode: '0644'
+    
+    - name: "Create .env file with AIRFLOW_UID"
+      ansible.builtin.shell: |
+        echo "AIRFLOW_UID=$(id -u)" > {{ dest_path }}/.env
+      args:
+        creates: "{{ dest_path }}/.env"
+
+    - name: Install airflow using docker-compose.yaml file
+      ansible.builtin.shell:
+        cmd: "docker compose up -d"
+        chdir: "{{ dest_path }}"
