@@ -59,3 +59,24 @@ ansible-playbook airflow_install.yaml --syntax-check
 ```
 ansible-playbook airflow_install.yaml -k
 ```
+
+## Postgres installation
+
+- playbook 파일 구문을 체크한다.
+
+```
+ansible-playbook postgres_install.yaml --syntax-check
+```
+
+- playbook을 실행하여 Docker 설치 자동화 파일을 적용
+- rocky 그룹에 해당하는 호스트에 일괄 적용
+
+```
+ansible-playbook postgres_install.yaml -k
+```
+
+- 버전 확인
+
+```
+psql --version
+```

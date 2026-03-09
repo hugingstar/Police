@@ -1,0 +1,50 @@
+---
+- name: Install PostgreSQL 17.7
+  hosts: db_servers
+  become: yes
+  vars:
+    postgres_version: "17"
+    # 특정 마이너 버전까지 명시하려면 패키지 관리자의 버전을 확인해야 합니다.
+    # 보통 '17.7-1.pgdg22.04+1' 형식이나, 여기서는 범용적인 '17' 설치 후 설명을 덧붙입니다.
+    postgres_full_version: "17.7" 
+
+  tasks:
+    - name: 필수 의존성 패키지 설치
+      apt:
+        name:
+          - gnupg2
+          - wget
+          - software-properties-common
+        state: present
+        update_cache: yes
+
+    - name: PostgreSQL 공식 GPG 키 추가
+      apt_key:
+        url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+        state: present
+
+    - name: PostgreSQL 공식 저장소 추가
+      apt_repository:
+        repo: "deb http://apt.postgresql.org/pub/repos/apt/ {{ ansible_distribution_release }}-pgdg main"
+        state: present
+
+    - name: PostgreSQL {{ postgres_full_version }} 설치
+      apt:
+        name: "postgresql-{{ postgres_version }}={{ postgres_full_version }}*"
+        state: present
+        update_cache: yes
+
+    - name: PostgreSQL 서비스 시작 및 활성화
+      systemd:
+        name: postgresql
+        state: started
+        enabled: yes
+
+    - name: 설치된 버전 확인
+      command: psql --version
+      register: pg_version_check
+      changed_when: false
+
+    - name: 설치 결과 출력
+      debug:
+        msg: "설치된 버전: {{ pg_version_check.stdout }}"
