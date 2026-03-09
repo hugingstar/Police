@@ -1,10 +1,12 @@
 # ☸️ Kubernetes Infrastructure Automation Module (Ubuntu 22.04)
 
 본 저장소는 전체 프로젝트의 **인프라 자동화 모듈**로, **Ansible**을 사용하여 **Ubuntu 22.04** 환경에 쿠버네티스(Kubernetes) 클러스터를 신속하게 프로비저닝하고 초기 설정을 완료하는 기능을 수행합니다.
+<br>
 
 ## 📌 개요
 
-이 모듈은 수동 설치의 번거로움을 제거하고, 코드 기반(IaC)으로 일관된 쿠버네티스 실습 환경을 구축하기 위해 제작되었습니다. 해당 모듈은 쿠버네티스에서 제공하는 **Calico CNI**를 설치하며, 다른 플러그인으로 대체 하고자 할 경우 06_install_calico.yaml 파일을 수정해야 합니다.  
+이 모듈은 수동 설치의 번거로움을 제거하고, 코드 기반(IaC)으로 일관된 쿠버네티스 실습 환경을 구축하기 위해 제작되었습니다. 해당 모듈은 쿠버네티스에서 제공하는 **Calico CNI**를 설치하며, 다른 플러그인으로 대체 하고자 할 경우 06_install_calico.yaml 파일을 수정해야 합니다. 
+<br>
 
 ## 🛠 멱등성 및 안정성 (Idempotency)
 
@@ -12,6 +14,7 @@
 
 - 동일한 플레이북을 여러 번 실행하더라도 시스템 상태를 확인한 후 필요한 변경사항만 적용합니다.
 - 이미 설치가 완료된 노드에서 재실행 시 기존 설정을 파괴하지 않고 “OK” 상태를 유지하므로 네트워크 단절 등으로 중단되었을 경우에도 안심하고 다시 실행할 수 있습니다.
+<br>
 
 ## 📂 디렉토리 구조 및 역할
 
@@ -31,10 +34,12 @@
 │   └── hosts               # 마스터/워커 노드 연결 정보 (IP 설정)
 └── README.md
 ```
+<br>
 
 ## ❓실행 방법
 
 이 프로젝트는 Ansible을 통해 전체 인프라 구축 과정을 자동화합니다. /scripts 내의 런타임 설치부터 쿠버네티스 클러스터 구성까지 아래 순서대로 플레이북을 실행하면 클러스터가 완성됩니다. 
+<br>
 
 ### 1. 사전 준비
 
@@ -43,12 +48,14 @@
 - **OS** : Ubuntu 22.04 LTS 권장
 - **SSH Key 공유**: Ansible Control Node에서 모든 Managed Node(Master, Worker)로 `ssh-copy-id`가 완료되어야 합니다.
 - **인벤토리 설정**: `/etc/ansible/hosts` 파일에 노드 IP를 그룹별로 설정합니다.
+<br>
 
 ### 2. 클러스터 자동 구축
 
 파일 번호 순서(01~07)에 따라 설정을 진행합니다. 
 
 03_setup_container_runtime.yaml 실행 시 내부적으로 /scripts/install_docker.sh를 호출하여 Docker 및 Continer를 설치합니다. 따라서 파일 구조를 그대로 유지해야 합니다. 
+<br>
 
 ### **2-1. 전체 일괄 실행**
 
@@ -56,6 +63,7 @@
 # playbooks 디렉토리 내의 모든 설정을 순차적으로 실행
 ansible-playbook playbooks/*.yaml
 ```
+<br>
 
 ### **2-2. 단계별 개별 실행**
 
@@ -78,7 +86,8 @@ ansible-playbook playbooks/*.yaml
     lsmod | grep br_netfilter  # 모듈 로드 확인
     sysctl net.bridge.bridge-nf-call-iptables  # 값이 1인지 확인
     ```
-    
+<br>
+
 2. **컨테이너 런타임 설치 (Script 연동)**
     
     ```bash
@@ -93,7 +102,8 @@ ansible-playbook playbooks/*.yaml
     sudo systemctl status containerd  # 서비스 실행 중(Active) 확인
     docker version  # 또는 containerd --version 확인
     ```
-    
+<br>
+
 3. **k8s 바이너리 설치 및 마스터 초기화** 
     
     ```bash
@@ -112,7 +122,8 @@ ansible-playbook playbooks/*.yaml
     kubectl get pods -n kube-system  # apiserver, etcd, scheduler 등이 Running인지 확인
     ls /etc/kubernetes/admin.conf    # 관리자 설정 파일 생성 확인
     ```
-    
+<br>
+
 4. **네트워크(CNI) 배포 및 워커 노드 조인** 
     
     ```bash
@@ -131,7 +142,7 @@ ansible-playbook playbooks/*.yaml
     kubectl get nodes
     # Master 노드 외에 Worker 노드들이 추가되었는지, STATUS가 Ready인지 확인
     ```
-    
+<br>
 
 ### 3. 최종 상태 확인
 
