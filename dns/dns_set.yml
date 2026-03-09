@@ -1,0 +1,60 @@
+---
+- name: DNS 서버(BIND) 자동 구축
+  hosts: dns_servers
+  become: yes
+  tasks:
+    - name: 1. 방화벽 및 SELinux 끄기
+      shell: |
+        systemctl stop firewalld
+        systemctl disable firewalld
+        setenforce 0
+        sed -i 's/SELINUX=enforcing/SELINUX=disabled/' /etc/selinux/config
+
+    - name: 2. BIND 패키지 설치
+      dnf:
+        name: [bind, bind-chroot]
+        state: present
+
+    - name: 3. named.conf 설정 (Listen Any, DNSSEC No)
+      copy:
+        dest: /etc/named.conf
+        content: |
+          options {
+              listen-on port 53 { any; };
+              allow-query { any; };
+              recursion yes;
+              dnssec-validation no;
+              directory "/var/named";
+          };
+          include "/etc/named.rfc1912.zones";
+
+    - name: 4. Zone 파일 등록 (kojel.com)
+      blockinfile:
+        path: /etc/named.rfc1912.zones
+        block: |
+          zone "kojel.com" IN {
+              type master;
+              file "kojel.com.dns";
+              allow-update { none; };
+          };
+
+    - name: 5. 도메인 상세 레코드 생성 (A, MX 레코드)
+      copy:
+        dest: /var/named/kojel.com.dns
+        owner: root
+        group: named
+        mode: '0640'
+        content: |
+          $TTL 1D
+          @ IN SOA ns1.kojel.com. root.kojel.com. ( 0 1D 1H 1W 3H )
+          @ IN NS  ns1.kojel.com.
+          @ IN MX 10 mail.kojel.com.
+          ns1  IN A  192.168.17.3
+          www  IN A  192.168.17.4
+          mail IN A  192.168.17.5
+
+    - name: 6. 서비스 시작
+      service:
+        name: named
+        state: restarted
+        enabled: yes
