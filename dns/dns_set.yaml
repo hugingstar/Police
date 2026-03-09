@@ -1,4 +1,14 @@
 ---
+- name: 인벤토리 업데이트 (해당 서버 그룹)
+  hosts: localhost
+  become: yes
+  tasks:
+    - name: /etc/ansible/hosts에 IP 등록
+      lineinfile:
+        path: /etc/ansible/hosts
+        line: "10.22.0.3" 
+        insertafter: '^\[dns_servers\]'  
+        state: present
 - name: DNS 서버 완전 자동화 구축 
   hosts: dns_servers
   become: yes
