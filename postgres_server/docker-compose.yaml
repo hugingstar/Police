@@ -1,7 +1,7 @@
 services:
   pstg_db_kospi:
     image: postgres:17.7
-    container_name: postgres_trade
+    container_name: postgres_kospi_trade
     ports:
       - "5435:5432"
     networks:
@@ -15,8 +15,75 @@ services:
       POSTGRES_PASSWORD: "@419lab@"
       POSTGRES_DB: trade
     restart: always
+
+  pstg_db_kosdaq:
+    image: postgres:17.7
+    container_name: postgres_kosdaq_trade
+    ports:
+      - "5435:5432"
+    networks:
+      - trade_kosdaq_network
+    volumes:
+      - ./postgres_kosdaq.sql:/docker-entrypoint-initdb.d/init.sql
+      - /root/Data/KOSDAQ/Database:/var/lib/postgresql/data
+    environment:
+      TZ: Asia/Seoul
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: "@419lab@"
+      POSTGRES_DB: trade
+    restart: always
+  
+  pstg_db_nasdaq:
+    image: postgres:17.7
+    container_name: postgres_nasdaq_trade
+    ports:
+      - "5435:5432"
+    networks:
+      - trade_nasdaq_network
+    volumes:
+      - ./postgres_nasdaq.sql:/docker-entrypoint-initdb.d/init.sql
+      - /root/Data/NASDAQ/Database:/var/lib/postgresql/data
+    environment:
+      TZ: Asia/Seoul
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: "@419lab@"
+      POSTGRES_DB: trade
+    restart: always
+  
+  pstg_db_nyse:
+    image: postgres:17.7
+    container_name: postgres_nyse_trade
+    ports:
+      - "5435:5432"
+    networks:
+      - trade_nyse_network
+    volumes:
+      - ./postgres_nyse.sql:/docker-entrypoint-initdb.d/init.sql
+      - /root/Data/NYSE/Database:/var/lib/postgresql/data
+    environment:
+      TZ: Asia/Seoul
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: "@419lab@"
+      POSTGRES_DB: trade
+    restart: always
+
+
+
   
 networks:
   trade_kospi_network:
     name: trade_kospi_network
     external: true
+
+  trade_kosdaq_network:
+    name: trade_kosdaq_network
+    external: true
+  
+  trade_nasdaq_network:
+    name: trade_nasdaq_network
+    external: true
+
+  trade_nyse_network:
+    name: trade_nyse_network
+    external: true
+  
