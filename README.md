@@ -104,3 +104,9 @@ ansible rocky -m shell -a "ifconfig" -k
 ```
 ansible all -m user -a "name=yslee" -k
 ```
+
+
+### (6) 전체 인프라 설치 자동화
+
+- Step1 (Install): (1) Docker > (2) Airflow > (3) Postgres
+- Step2 (Containers): (4) Postgres Container 

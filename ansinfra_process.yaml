@@ -1,0 +1,5 @@
+---
+- import_playbook: /root/Police/docker/docker_install.yaml
+- import_playbook: /root/Police/docker/airflow_install.yaml
+- import_playbook: /root/Police/docker/postgres_install.yaml
+- import_playbook: /root/Police/postgres_server/docker-compose.yaml
