@@ -6,9 +6,15 @@
   tasks:
    - name: 1. NFS 관리 디렉토리 생성 (/nfs_k8s)
      file:
-       path: /nfs_k8s
+       path: /nfs_k8s/
        state: directory
        mode: '0755'
+   - name: 1-1. 하위 디렉토리들 생성 (팀별 용도)
+     file:
+       path: "/nfs_k8s/{{ item }}"
+       state: directory
+       mode: '0777'
+     loop: [ 'static', 'was', 'db', 'config', 'monitoring']
 
    - name: 2. /etc/exports 파일에 설정 추가
      lineinfile:
