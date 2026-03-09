@@ -14,21 +14,23 @@ dnf install -y ansible-core
 
 # ssh pass
 dnf install -y sshpass
-```
 
+```
 - 설치할 영역을 설정합니다.
-
+- Cronjob 작업을 수행하고자 하는 IP를 작성합니다.
 ```
+
+
 vi /etc/ansible/hosts
 
 [yslee]
-10.17.0.100
+10.17.0.2
 ```
 
 - yaml 파일은 github를 통해서 내려 받는다.
 
 ```
-git clone https://github.com/hugingstar/Police.git
+git clone -b yslee --single-branch https://github.com/hugingstar/Police.git
 ```
 
 - playbook 파일 구문을 체크한다.
