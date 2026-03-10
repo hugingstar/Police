@@ -32,12 +32,12 @@
       # 24, 30, 33번 행 관련 주석 해제
       replace:
         path: /etc/dovecot/dovecot.conf
-        regexp: '^#({{ item }})'
-        replace: '\1'
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
       loop:
-        - 'protocols = imap pop3 lmtp'
-        - 'listen = \*, ::'
-        - 'login_trusted_networks = 192.168.22.0/24' # 예시 대역
+        - { regexp: '^#?protocols =', line: 'protocols = imap pop3 lmtp submission' }
+        - { regexp: '^#?listen =', line: 'listen = *, ::' }
+        - { regexp: '^#?base_dir =', line: 'base_dir = /var/run/dovecot/' }
 
     - name: 6. Dovecot 인증 설정 (10-auth.conf)
       # 10번 행 평문 인증 허용 (yes -> no)
@@ -54,15 +54,15 @@
         line: 'ssl = no'
 
     - name: 8. Dovecot 메일 경로 설정 (10-mail.conf)
-      # 25번 주석 해제, 121번 mail 그룹, 166번 잠금 메소드
+      # 25번 주석 해제, 121번 =mail, 166번 주석 해제
       lineinfile:
         path: /etc/dovecot/conf.d/10-mail.conf
         regexp: "{{ item.regexp }}"
         line: "{{ item.line }}"
       loop:
         - { regexp: '^#?mail_location =', line: 'mail_location = mbox:~/mail:INBOX=/var/mail/%u' }
-        - { regexp: '^#?mail_privileged_group =', line: 'mail_privileged_group = mail' }
-        - { regexp: '^#?dotlock_use_excl =', line: 'dotlock_use_excl = yes' }
+        - { regexp: '^#?mail_access_group =', line: 'mail_access_group = mail' }
+        - { regexp: '^#?lock_method =', line: 'lock_method = fcntl' }
 
     - name: 9. 모든 서비스 재시작
       service:
