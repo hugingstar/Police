@@ -60,10 +60,22 @@ ansible-playbook airflow_install.yaml --syntax-check
 ansible-playbook airflow_install.yaml -k
 ```
 
+- 설치된 추가 패키지 확인하는 방법(Additional packages)
+- 자신이 airflow_install.yaml 안에 추가한 사항을 확인하는 방법
+
+```
+docker compose exec airflow-worker pip list | grep -E "finance-datareader|pandas|numpy|psycopg2"
+```
+
+
 - airflow 컨테이너 별도로 삭제 방법
 
 ```
+# 컨테이너 삭제
 docker rm -f $(docker ps -aq --filter "name=cronjob")
+
+# 이미지 삭제
+docker rmi $(docker images 'cronjob-airflow*' -q)
 ```
 
 
