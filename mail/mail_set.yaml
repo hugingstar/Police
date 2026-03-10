@@ -3,7 +3,7 @@
   hosts: mail_servers
   become: yes
   tasks:
-    - name: 1. DNS 설정
+    - name: 1. DNS 설정 
       copy:
         dest: /etc/resolv.conf
         content: |
@@ -14,28 +14,48 @@
         name: [dovecot, sendmail, sendmail-cf, m4]
         state: present
 
-    - name: 3. Sendmail 설정 업데이트
+    - name: 3. Sendmail 설정 업데이트 (.mc 수정 및 .cf 생성)
       shell: |
+        # 로컬 호스트 제한 해제 (0.0.0.0으로 변경)
         sed -i "s/Addr=127.0.0.1/Addr=0.0.0.0/g" /etc/mail/sendmail.mc
+        # .mc 파일을 기반으로 .cf 설정 파일 생성
         m4 /etc/mail/sendmail.mc > /etc/mail/sendmail.cf
-        echo "kojel.com" >> /etc/mail/local-host-names
+        # 도메인 추가 (기존 내용 유지하며 추가)
+        grep -q "kojel.com" /etc/mail/local-host-names || echo "kojel.com" >> /etc/mail/local-host-names
       args:
         executable: /bin/bash
 
-    - name: 4. Dovecot 설정
+    - name: 4. Mail Access 권한 설정 및 DB 갱신
+      blockinfile:
+        path: /etc/mail/access
+        block: |
+          kojel.com           RELAY
+          192.168.22          RELAY
+      register: access_result
+
+    - name: 5. Access DB 생성 (변경사항 있을 때만 실행)
+      shell: makemap hash /etc/mail/access < /etc/mail/access
+      when: access_result.changed
+
+    - name: 6. Dovecot 설정 (통합 관리)
       copy:
         dest: /etc/dovecot/dovecot.conf
         content: |
+          # 기본 프로토콜 활성화
           protocols = imap pop3 lmtp submission
+          # 보안 및 인증 설정 (평문 허용 및 SSL 끄기)
           disable_plaintext_auth = no
           ssl = no
+          # 메일 저장소 경로 설정
           mail_location = mbox:~/mail:INBOX=/var/mail/%u
           mail_privileged_group = mail
+          # 접근 허용 및 리스닝
+          listen = *, ::
         owner: root
         group: root
         mode: '0644'
 
-    - name: 5. 서비스 시작 및 활성화
+    - name: 7. 서비스 시작 및 활성화
       service:
         name: "{{ item }}"
         state: restarted
