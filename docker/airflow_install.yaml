@@ -43,23 +43,21 @@
         replace: |
           \1- ${AIRFLOW_PROJ_DIR:-.}/plugins:/opt/airflow/plugins
           \1- {{ market_map_path }}:/opt/airflow/data/market
-
-    - name: "Add networks to x-airflow-common (Inherited by all services)"
+    
+    # 네트워크 공유 설정
+    - name: "Add networks to airflow-worker service"
       ansible.builtin.replace:
         path: "{{ dest_path }}/docker-compose.yaml"
-        # user 설정 바로 위에 networks 블록을 삽입합니다.
-        regexp: '(\s+)user: "\$\{AIRFLOW_UID:-\d+\}:0"'
+        regexp: '^(  airflow-worker:.*(\n    .*)*?    restart: always)'
         replace: |
-          \1networks:
-          \1  - default
-          \1  - trade_kospi_network
-          \1  - trade_kosdaq_network
-          \1  - trade_nasdaq_network
-          \1  - trade_nyse_network
-          \1user: "${AIRFLOW_UID:-50000}:0"
-
-
-    # yaml 하단에 네트워크 정의
+          \1
+              networks:
+                - default
+                - trade_kospi_network
+                - trade_kosdaq_network
+                - trade_nasdaq_network
+                - trade_nyse_network
+    
     - name: "Define external networks at the end of docker-compose.yaml"
       ansible.builtin.blockinfile:
         path: "{{ dest_path }}/docker-compose.yaml"
@@ -75,8 +73,7 @@
               external: true
             trade_nyse_network:
               external: true
-
-    # 환경 변수 설정
+    
     - name: "Create or Update .env file (Force disable examples)"
       ansible.builtin.copy:
         dest: "{{ dest_path }}/.env"
@@ -84,7 +81,6 @@
           AIRFLOW_UID=50000
           _PIP_ADDITIONAL_REQUIREMENTS={{ additional_packages }}
           AIRFLOW__CORE__LOAD_EXAMPLES=False
-          AIRFLOW__CORE__DEFAULT_TIMEZONE=Asia/Seoul
           AIRFLOW__WEBSERVER__DEFAULT_UI_TIMEZONE=Asia/Seoul
         mode: '0777'
     
