@@ -32,8 +32,9 @@ ansible-playbook dns_set.yaml --syntax-check
 - playbook을 실행하여 DNS 설치 파일을 적용
 
 ```
-ansible-playbook dns_set.yaml -k
+ansible-playbook dns_set.yaml -K
 ```
+
 - 수정 후 업데이트 
 git pull origin jjh
 
@@ -43,4 +44,5 @@ git pull origin jjh
 3. named.conf 자동 생성
 4. Zone 설정 자동 추가
 5. 도메인 레코드 파일(kojel.com.dns) 자동 생성
-6. 서비스 시작 및 자동 재시작 활성화
+6. DNS 설정
+7. 서비스 시작 및 자동 재시작 활성화

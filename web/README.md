@@ -11,24 +11,33 @@ vi /etc/ansible/hosts
 [web_servers]
 10.22.0.4 ansible_user=root ansible_password=P@ssw0rd
 ```
-- yaml 파일은 github를 통해서 내려 받는다.
 
+- yaml 파일은 github를 통해서 내려 받는다.
 ```
 git clone -b jjh --single-branch https://github.com/hugingstar/Police.git
 ```
-- playbook 파일 구문을 체크
 
+- SSH 호스트 키 불일치 방지 
+vi /etc/ansible/ansible.cfg
+```
+[defaults]
+host_key_checking = False
+```
+
+- playbook 파일 구문을 체크
 ```
 cd Police/web
 ansible-playbook web.yaml --syntax-check
 ```
 
 - playbook을 실행하여 DNS 설치 파일을 적용
+```
+ansible-playbook web.yaml -K
 
 ```
-ansible-playbook web.yaml -k
 
-```
+- 수정 후 업데이트 
+git pull origin jjh
 
 1. 시스템 패키지 설치 (httpd, python)
 2. Python 앱 의존성 패키지 설치

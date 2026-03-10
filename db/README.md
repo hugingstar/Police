@@ -11,23 +11,33 @@ vi /etc/ansible/hosts
 [db_servers]
 10.22.0.5 ansible_user=root ansible_password=P@ssw0rd
 ```
-- yaml 파일은 github를 통해서 내려 받는다.
 
+- yaml 파일은 github를 통해서 내려 받는다.
 ```
 git clone -b jjh --single-branch https://github.com/hugingstar/Police.git
 ```
-- playbook 파일 구문을 체크
 
+- SSH 호스트 키 불일치 방지 
+vi /etc/ansible/ansible.cfg
+```
+[defaults]
+host_key_checking = False
+```
+
+- playbook 파일 구문을 체크
 ```
 cd Police/db
 ansible-playbook db.yaml --syntax-check
 ```
 
 - playbook을 실행하여 DNS 설치 파일을 적용
+```
+ansible-playbook db.yaml -K
+```
 
-```
-ansible-playbook db.yaml -k
-```
+- 수정 후 업데이트 
+git pull origin jjh
+
 1. MariaDB 관련 패키지 설치 (mariadb-server, python3-pymysql)
 2. MariaDB 서비스 시작 및 활성화
 3. MariaDB 한글 인코딩 설정 (/etc/my.cnf.d/mariadb-server.cnf)
