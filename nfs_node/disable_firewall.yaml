@@ -10,14 +10,13 @@
         state: stopped
         enabled: no
 
-    - name: 2. 방화벽 상태 확인 (ActiveState 조회)
-      ansible.builtin.command: systemctl is-active firewalld
-      register: fw_active_status
-      failed_when: false
+    - name: 2. 방화벽 상세 상태 확인 (SubState 조회)
+      ansible.builtin.command: systemctl show -p SubState firewalld
+      register: fw_sub_status
       changed_when: false
 
-- name: 3. 최종 결과 출력 (Dead 상태 확인)
-  ansible.builtin.debug:
-    msg: 
-      - "현재 방화벽 상세 상태: {{ fw_sub_status.stdout }}"
-      - "결과: 만약 상세 상태가 'SubState=dead'라면 성공적으로 내려간 것입니다."
+    - name: 3. 최종 결과 출력 (Dead 상태 확인)
+      ansible.builtin.debug:
+         msg: 
+           - "현재 방화벽 상세 상태: {{ fw_sub_status.stdout }}"
+           - "결과: 만약 상세 상태가 'SubState=dead'라면 성공적으로 내려간 것입니다."
