@@ -69,4 +69,6 @@
         name: "{{ item }}"
         state: restarted
         enabled: yes
-      loop: [sendmail, dovecot]
+      loop: 
+            - sendmail 
+            - dovecot
