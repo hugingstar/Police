@@ -1,28 +1,17 @@
 ---
-- name: 인벤토리 업데이트 (해당 서버 그룹)
-  hosts: localhost
-  become: yes
-  tasks:
-    - name: /etc/ansible/hosts에 IP 등록
-      lineinfile:
-        path: /etc/ansible/hosts
-        line: "10.22.0.3" 
-        insertafter: '^\[dns_servers\]'  
-        state: present
 - name: DNS 서버 완전 자동화 구축 
   hosts: dns_servers
   become: yes
   tasks:
-    - name: 1. 기존 환경 정리
-      shell: |
-        dnf remove -y bind-chroot
-        rm -f /etc/named.conf /var/named/kojel.com.dns
-      ignore_errors: yes
-
-    - name: 2. BIND 및 유틸리티 설치
+    - name: 1. BIND 및 유틸리티 설치
       dnf:
-        name: [bind, bind-utils]
+        name: bind and bind-utils
         state: present
+
+    - name: 2. 백업파일 생성
+      shell: |
+        cp /etc/named.conf /etc/named.conf.bak
+      ignore_errors: yes
 
     - name: 3. named.conf 자동 생성
       copy:
@@ -67,8 +56,13 @@
           ns1  IN A  10.22.0.3
           www  IN A  10.22.0.4
           mail IN A  10.22.0.2
+    - name: 6. DNS 설정
+      copy:
+        dest: /etc/resolv.conf
+        content: |
+          nameserver 127.0.0.1
 
-    - name: 6. 서비스 시작 및 자동 재시작 활성화
+    - name: 7. 서비스 시작 및 자동 재시작 활성화
       service:
         name: named
         state: restarted
