@@ -44,6 +44,36 @@
           \1- ${AIRFLOW_PROJ_DIR:-.}/plugins:/opt/airflow/plugins
           \1- {{ market_map_path }}:/opt/airflow/data/market
     
+    # 네트워크 공유 설정
+    - name: "Add networks to airflow-worker service"
+      ansible.builtin.replace:
+        path: "{{ dest_path }}/docker-compose.yaml"
+        regexp: '^(  airflow-worker:.*(\n    .*)*?    restart: always)'
+        replace: |
+          \1
+              networks:
+                - default
+                - trade_kospi_network
+                - trade_kosdaq_network
+                - trade_nasdaq_network
+                - trade_nyse_network
+
+    - name: "Define external networks at the end of docker-compose.yaml"
+      ansible.builtin.blockinfile:
+        path: "{{ dest_path }}/docker-compose.yaml"
+        marker: "# {mark} ANSIBLE MANAGED NETWORKS"
+        insertafter: EOF
+        block: |
+          networks:
+            trade_kospi_network:
+              external: true
+            trade_kosdaq_network:
+              external: true
+            trade_nasdaq_network:
+              external: true
+            trade_nyse_network:
+              external: true
+
     - name: "Create .env file with AIRFLOW_UID"
       ansible.builtin.shell: |
         echo "AIRFLOW_UID=50000" > {{ dest_path }}/.env
