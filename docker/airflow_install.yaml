@@ -47,17 +47,17 @@
     - name: "Add networks to Airflow services (worker, scheduler, webserver, triggerer)"
       ansible.builtin.replace:
         path: "{{ dest_path }}/docker-compose.yaml"
-        # 서비스 이름 부분을 변수({{ item }})로 처리하여 반복 적용
-        regexp: '^(\s+{{ item }}:.*(\n\s+.*)*?\s+restart: always)'
+        # restart: always 문구를 기준으로 그 바로 아래에 networks를 붙입니다.
+        regexp: '^(\s+{{ item }}:.*(\n\s+.*)*?)\s+(restart: always)'
         replace: |
-          \1
-                networks:
-                  - default
-                  - cronjob-default
-                  - trade_kospi_network
-                  - trade_kosdaq_network
-                  - trade_nasdaq_network
-                  - trade_nyse_network
+          \1    \3
+          \1    networks:
+          \1      - default
+          \1      - cronjob-default
+          \1      - trade_kospi_network
+          \1      - trade_kosdaq_network
+          \1      - trade_nasdaq_network
+          \1      - trade_nyse_network
       with_items:
         - "airflow-worker"
         - "airflow-scheduler"
@@ -80,7 +80,7 @@
               external: true
             trade_nyse_network:
               external: true
-              
+
     # 환경 변수 설정
     - name: "Create or Update .env file (Force disable examples)"
       ansible.builtin.copy:
