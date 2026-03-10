@@ -1,4 +1,4 @@
-# Postgres DB 
+# Airflow infrastructure set-up with Postgres
 
 - (주의) 이 과정은 Airflow가 설치된 이후의 작업입니다. 반드시 Airflow를 설치한 이후에 작업해주세요.
 
@@ -10,8 +10,23 @@
 git clone -b yslee --single-branch https://github.com/hugingstar/Police.git
 ```
 
-- compose 파일 실행 (백그라운드로 실행)
-- docker network 실행
+- Airflow set-up automation
+    - 이 방법은 Postgres DB server를 자동으로 생성한다.
+    - 그 후 
+
+```
+ansible-playbook ansinfra_airflow_build.yaml -k
+```
+
+## 세부 작업 과정
+
+- Ansible로 네트워크생성 > DB 컴포즈 한번에 실행하기
+
+```
+
+```
+
+- 위의 자동화 과정 세부 사항은 아래에 정리합니다.
 
 ```
 # Docker용 네트워크 생성
@@ -24,7 +39,7 @@ docker network create trade_nyse_network
 docker compose up -d
 ```
 
-- 데이터베이스 확인 방법 : 컨테이너 명을 사용해서 컨테이너 안으로 들어간다.
+- 생성한 데이터베이스 확인 방법 : 컨테이너 명을 사용해서 컨테이너 안으로 들어간다.
 - psql -U를 사용해서 들어간다.
 
 ```
@@ -53,9 +68,9 @@ SELECT * FROM kospi_log LIMIT 1;
 Ctrl + P + Q
 ```
 
-
+- Airflow가 실행되어 있는 상태에서 실행하여야 한다.
 - Data Collector는 ansible 스크립트를 사용하여 airflow 내에 있는 dags로 위치시킨다.
 
 ```
-
+ansible-playbook pymove_to_dags.yaml -k
 ```
