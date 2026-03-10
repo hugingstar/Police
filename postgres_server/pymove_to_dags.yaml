@@ -7,3 +7,21 @@
         src: /root/Police/postgres_server/dag_kospi.py
         dest: /root/Cronjob/dags/dag_kospi.py
         mode: '0777'
+    
+    - name: Copy the file to the destination
+      ansible.builtin.copy:
+        src: /root/Police/postgres_server/dag_kosdaq.py
+        dest: /root/Cronjob/dags/dag_kosdaq.py
+        mode: '0777'
+    
+    - name: Copy the file to the destination
+      ansible.builtin.copy:
+        src: /root/Police/postgres_server/dag_nasdaq.py
+        dest: /root/Cronjob/dags/dag_nasdaq.py
+        mode: '0777'
+
+    - name: Copy the file to the destination
+      ansible.builtin.copy:
+        src: /root/Police/postgres_server/dag_nyse.py
+        dest: /root/Cronjob/dags/dag_nyse.py
+        mode: '0777'

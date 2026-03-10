@@ -108,5 +108,16 @@ ansible all -m user -a "name=yslee" -k
 
 ### (6) 전체 인프라 설치 자동화
 
-- Step1 (Install): (1) Docker > (2) Airflow > (3) Postgres
-- Step2 (Containers): (4) Postgres Container 
+#### Step1 (Install): 
+(1) Firewall > (2) Docker install > (3) Postgres installation on linux
+
+```
+ansible-playbook ansinfra_process.yaml -k
+```
+
+#### Step2 (Containers): 
+(4) Postgres server using docker (5) Runnning Airflow (6) pyfiles move to dags folder
+
+```
+ansible-playbook ansinfra_airflow_build.yaml -k
+```
