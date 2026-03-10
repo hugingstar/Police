@@ -1,5 +1,5 @@
 ---
-- name: Postgres server containers 작동 시작
+- name: Postgres server containers 작동 시작 스크립트
   hosts: airflow
   become: true
   vars:
@@ -22,3 +22,4 @@
       ansible.builtin.shell:
         cmd: "docker compose up -d"
         chdir: "{{ project_path }}"
+        
