@@ -1,12 +1,10 @@
 ---
 - name: Docker Compose 배포 및 상태 확인
   hosts: airflow
-  connection: local
   become: true
-
   vars:
-    # 현재 디렉토리 경로 변수 설정
-    project_path: "{{ ansible_env.PWD }}"
+
+    project_path: "/root/Police/postgres_server"
 
   tasks:
     - name: Run docker compose (Background)
@@ -18,15 +16,16 @@
 
     - name: Docker compose Results
       debug:
-        msg: "Docker Compose가 성공적으로 실행되었습니다. (상태: {{ compose_output.actions }})"
+        msg: "Docker Compose가 성공적으로 실행되었습니다. (액션: {{ compose_output.actions }})"
 
-    - name: Container information
+    - name: Get Container information
       community.docker.docker_compose_v2_info:
         project_src: "{{ project_path }}"
       register: compose_info
 
     - name: Service summary
       debug:
-        msg: >
-          서비스 '{{ item.key }}'는 현재 '{{ item.value.state }}' 상태입니다.
+        msg: "서비스 '{{ item.key }}'는 현재 '{{ item.value.state }}' 상태입니다."
       loop: "{{ compose_info.services | dict2items }}"
+      loop_control:
+        label: "{{ item.key }}" # 로그 출력 시 서비스 이름만 깔끔하게 표시
