@@ -1,0 +1,22 @@
+---
+- name: Disable Firewall and Verify Status
+  hosts: localhost
+  become: yes
+
+  tasks:
+    - name: 1. 방화벽 서비스 중지 및 자동 시작 비활성화
+      ansible.builtin.systemd:
+        name: firewalld
+        state: stopped
+        enabled: no
+
+    - name: 2. 방화벽 상태 확인 (ActiveState 조회)
+      ansible.builtin.command: systemctl is-active firewalld
+      register: fw_active_status
+      failed_when: false
+      changed_when: false
+
+    - name: 3. 방화벽 상세 상태 확인 (SubState 조회)
+      ansible.builtin.command: systemctl show -p SubState firewalld
+      register: fw_sub_status
+      changed_when: false
