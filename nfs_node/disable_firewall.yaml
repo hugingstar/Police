@@ -16,7 +16,8 @@
       failed_when: false
       changed_when: false
 
-    - name: 3. 방화벽 상세 상태 확인 (SubState 조회)
-      ansible.builtin.command: systemctl show -p SubState firewalld
-      register: fw_sub_status
-      changed_when: false
+- name: 3. 최종 결과 출력 (Dead 상태 확인)
+  ansible.builtin.debug:
+    msg: 
+      - "현재 방화벽 상세 상태: {{ fw_sub_status.stdout }}"
+      - "결과: 만약 상세 상태가 'SubState=dead'라면 성공적으로 내려간 것입니다."
