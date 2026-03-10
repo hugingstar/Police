@@ -3,63 +3,71 @@
   hosts: mail_servers
   become: yes
   tasks:
-    - name: 1. DNS 설정 
-      copy:
-        dest: /etc/resolv.conf
-        content: |
-          nameserver 10.22.0.3
-
-    - name: 2. 메일 패키지 설치
+    - name: 1. DNS 및 패키지 설치
+      # (기본 DNS 설정 및 dnf 설치 부분은 이전과 동일하므로 생략 가능)
       dnf:
         name: [dovecot, sendmail, sendmail-cf, m4]
         state: present
 
-    - name: 3. Sendmail 설정 업데이트 (.mc 수정 및 .cf 생성)
+    - name: 2. Sendmail 메인 설정 (sendmail.cf)
+      # 85번 행 Cw 도메인 입력 및 268번 행 127.0.0.1 제한 삭제
       shell: |
-        # 로컬 호스트 제한 해제 (0.0.0.0으로 변경)
-        sed -i "s/Addr=127.0.0.1/Addr=0.0.0.0/g" /etc/mail/sendmail.mc
-        # .mc 파일을 기반으로 .cf 설정 파일 생성
-        m4 /etc/mail/sendmail.mc > /etc/mail/sendmail.cf
-        # 도메인 추가 (기존 내용 유지하며 추가)
-        grep -q "kojel.com" /etc/mail/local-host-names || echo "kojel.com" >> /etc/mail/local-host-names
+        sed -i 's/^Cw.*/Cw kojel.com/' /etc/mail/sendmail.cf
+        sed -i 's/Addr=127.0.0.1, //' /etc/mail/sendmail.cf
       args:
         executable: /bin/bash
 
-    - name: 4. Mail Access 권한 설정 및 DB 갱신
+    - name: 3. Mail Access 설정 및 DB 생성
       blockinfile:
         path: /etc/mail/access
         block: |
           kojel.com           RELAY
-          172.0.0             RELAY
-      register: access_result
+          192.168.22          RELAY
+      register: access_db
 
-    - name: 5. Access DB 생성 (변경사항 있을 때만 실행)
+    - name: 4. Access DB 갱신 (makemap)
       shell: makemap hash /etc/mail/access < /etc/mail/access
-      when: access_result.changed
+      when: access_db.changed
 
-    - name: 6. Dovecot 설정 (통합 관리)
-      copy:
-        dest: /etc/dovecot/dovecot.conf
-        content: |
-          # 기본 프로토콜 활성화
-          protocols = imap pop3 lmtp submission
-          # 보안 및 인증 설정 (평문 허용 및 SSL 끄기)
-          disable_plaintext_auth = no
-          ssl = no
-          # 메일 저장소 경로 설정
-          mail_location = mbox:~/mail:INBOX=/var/mail/%u
-          mail_privileged_group = mail
-          # 접근 허용 및 리스닝
-          listen = *, ::
-        owner: root
-        group: root
-        mode: '0644'
+    - name: 5. Dovecot 기본 설정 (dovecot.conf)
+      # 24, 30, 33번 행 관련 주석 해제
+      replace:
+        path: /etc/dovecot/dovecot.conf
+        regexp: '^#({{ item }})'
+        replace: '\1'
+      loop:
+        - 'protocols = imap pop3 lmtp'
+        - 'listen = \*, ::'
+        - 'login_trusted_networks = 192.168.22.0/24' # 예시 대역
 
-    - name: 7. 서비스 시작 및 활성화
+    - name: 6. Dovecot 인증 설정 (10-auth.conf)
+      # 10번 행 평문 인증 허용 (yes -> no)
+      lineinfile:
+        path: /etc/dovecot/conf.d/10-auth.conf
+        regexp: '^#?disable_plaintext_auth ='
+        line: 'disable_plaintext_auth = no'
+
+    - name: 7. Dovecot SSL 설정 (10-ssl.conf)
+      # 8번 행 SSL 끄기 (yes -> no)
+      lineinfile:
+        path: /etc/dovecot/conf.d/10-ssl.conf
+        regexp: '^ssl ='
+        line: 'ssl = no'
+
+    - name: 8. Dovecot 메일 경로 설정 (10-mail.conf)
+      # 25번 주석 해제, 121번 mail 그룹, 166번 잠금 메소드
+      lineinfile:
+        path: /etc/dovecot/conf.d/10-mail.conf
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+      loop:
+        - { regexp: '^#?mail_location =', line: 'mail_location = mbox:~/mail:INBOX=/var/mail/%u' }
+        - { regexp: '^#?mail_privileged_group =', line: 'mail_privileged_group = mail' }
+        - { regexp: '^#?dotlock_use_excl =', line: 'dotlock_use_excl = yes' }
+
+    - name: 9. 모든 서비스 재시작
       service:
         name: "{{ item }}"
         state: restarted
         enabled: yes
-      with_items:
-        - sendmail
-        - dovecot
+      loop: [sendmail, dovecot]
