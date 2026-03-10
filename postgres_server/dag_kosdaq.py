@@ -113,7 +113,7 @@ with DAG(
     'dag_kosdaq',
     default_args=default_args,
     description='Daily stock price upsert to PostgreSQL',
-    schedule_interval='0 15 * * *',  # 매일 저녁 8시 (Cron: Minute Hour Day Month DayOfWeek)
+    schedule_interval='30 20 * * *',  # 매일 저녁 8시 (Cron: Minute Hour Day Month DayOfWeek)
     catchup=True,
     tags=['finance', 'stock']
 ) as dag:
