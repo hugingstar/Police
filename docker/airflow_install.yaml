@@ -34,20 +34,7 @@
         dest: "{{ dest_path }}/docker-compose.yaml"
         mode: '0644'
         force: no
-    
-    - name: "Custom Dockerfile 생성" # 필요 패키지는 여기서 추가
-      ansible.builtin.copy:
-        dest: "{{ dest_path }}/Dockerfile"
-        content: |
-          FROM apache/airflow:{{ airflow_version }}
-          RUN pip install --no-cache-dir {{ additional_packages }}
-    
-    - name: "docker-compose.yaml 수정 (이미지 대신 빌드 사용)"
-      ansible.builtin.replace:
-        path: "{{ dest_path }}/docker-compose.yaml"
-        regexp: 'image: \${AIRFLOW_IMAGE_NAME:-apache/airflow:{{ airflow_version }}}'
-        replace: 'build: .'
-    
+        
     - name: "Create .env file with AIRFLOW_UID"
       ansible.builtin.shell: |
         echo "AIRFLOW_UID=$(id -u)" > {{ dest_path }}/.env
