@@ -35,13 +35,38 @@
         mode: '0644'
         force: no
     
+    - name: "Custom Dockerfile 생성" # 필요 패키지는 여기서 추가
+      ansible.builtin.copy:
+        dest: "{{ dest_path }}/Dockerfile"
+        content: |
+          FROM apache/airflow:{{ airflow_version }}
+          RUN pip install --no-cache-dir {{ additional_packages }}
+    
+    - name: "docker-compose.yaml 수정 (이미지 대신 빌드 사용)"
+      ansible.builtin.replace:
+        path: "{{ dest_path }}/docker-compose.yaml"
+        regexp: 'image: \${AIRFLOW_IMAGE_NAME:-apache/airflow:{{ airflow_version }}}'
+        replace: 'build: .'
+    
     - name: "Create .env file with AIRFLOW_UID"
       ansible.builtin.shell: |
         echo "AIRFLOW_UID=$(id -u)" > {{ dest_path }}/.env
       args:
         creates: "{{ dest_path }}/.env"
-
-    - name: Install airflow using docker-compose.yaml file
+    
+    - name: "Initialize Airflow Database"
       ansible.builtin.shell:
-        cmd: "docker compose up -d"
+        cmd: "docker compose up airflow-init"
         chdir: "{{ dest_path }}"
+    
+    - name: "Install airflow using docker-compose.yaml file"
+      ansible.builtin.shell:
+        cmd: "docker compose up -d --build" # --build 옵션 추가 권장
+        chdir: "{{ dest_path }}"
+        
+    - name: "Rocky Linux Firewalld port open"
+      ansible.posix.firewalld:
+        port: 8080/tcp
+        permanent: yes
+        state: enabled
+        immediate: yes
