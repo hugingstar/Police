@@ -38,7 +38,7 @@
 
     - name: "Add market data volume to docker-compose.yaml"
       ansible.builtin.replace:
-        path: "{{ dest_path }}/docekr-compose.yaml"
+        path: "{{ dest_path }}/docker-compose.yaml"
         regexp: '(\s+)- \$\{AIRFLOW_PROJ_DIR:-\.\}/plugins:/opt/airflow/plugins'
         replace: |
           \1- ${AIRFLOW_PROJ_DIR:-.}/plugins:/opt/airflow/plugins
