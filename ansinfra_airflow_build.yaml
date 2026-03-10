@@ -1,0 +1,3 @@
+---
+- import_playbook: /root/Police/docker/airflow_install.yaml
+- import_playbook: /root/Police/postgres_server/pymove_to_dags.yaml
