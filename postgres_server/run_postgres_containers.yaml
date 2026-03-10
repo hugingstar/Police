@@ -7,15 +7,16 @@
     project_path: "/root/Police/postgres_server"
 
   tasks:
-    - name: "Docker 네트워크 일괄 생성"
-      community.docker.docker_network:
-        name: "{{ item }}"
-        state: present
-      with_items:
+    - name: "Docker 네트워크 일괄 생성 (이미 있으면 스킵)"
+      ansible.builtin.shell:
+        cmd: "docker network inspect {{ item }} >/dev/null 2>&1 || docker network create {{ item }}"
+      loop:
         - trade_kospi_network
         - trade_kosdaq_network
         - trade_nasdaq_network
         - trade_nyse_network
+      register: network_result
+      changed_when: "network_result.rc == 0 and 'Error' not in network_result.stderr"
 
     - name: "Postgres server containers"
       ansible.builtin.shell:
