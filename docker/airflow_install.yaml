@@ -48,6 +48,7 @@
       ansible.builtin.shell: |
         echo "AIRFLOW_UID=50000" > {{ dest_path }}/.env
         echo "_PIP_ADDITIONAL_REQUIREMENTS={{ additional_packages }}" >> {{ dest_path }}/.env
+        echo "AIRFLOW__CORE__LOAD_EXAMPLES=False" >> {{ dest_path }}/.env
       args:
         creates: "{{ dest_path }}/.env"
     
