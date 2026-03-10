@@ -1,12 +1,15 @@
-web 서버 설치 자동화 
+#web 서버 설치 자동화 
 
-#mail 서버 구축 자동화 
-
+-ansible 설치 
 ```
-vi /etc/ansible/hosts
+dnf install -y epel-release
+dnf install -y ansible
+```
 
+vi /etc/ansible/hosts
+```
 [web_servers]
-10.22.0.4
+10.22.0.4 ansible_user=root ansible_password=P@ssw0rd
 ```
 - yaml 파일은 github를 통해서 내려 받는다.
 

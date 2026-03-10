@@ -1,10 +1,15 @@
 #db서버 구축 자동화  
 
+-ansible 설치 
 ```
-vi /etc/ansible/hosts
+dnf install -y epel-release
+dnf install -y ansible
+```
 
+vi /etc/ansible/hosts
+```
 [db_servers]
-10.22.0.
+10.22.0.5 ansible_user=root ansible_password=P@ssw0rd
 ```
 - yaml 파일은 github를 통해서 내려 받는다.
 

@@ -1,15 +1,26 @@
 #dns서버 구축 자동화  
 
+-ansible 설치 
 ```
-vi /etc/ansible/hosts
+dnf install -y epel-release
+dnf install -y ansible
+```
 
+vi /etc/ansible/hosts
+```
 [dns_servers]
-10.22.0.3
+10.22.0.3 ansible_user=root ansible_password=P@ssw0rd
 ```
 - yaml 파일은 github를 통해서 내려 받는다.
 
 ```
 git clone -b jjh --single-branch https://github.com/hugingstar/Police.git
+```
+- SSH 호스트 키 불일치 방지 
+vi /etc/ansible/ansible.cfg
+```
+[defaults]
+host_key_checking = False
 ```
 - playbook 파일 구문을 체크
 
@@ -23,6 +34,8 @@ ansible-playbook dns_set.yaml --syntax-check
 ```
 ansible-playbook dns_set.yaml -k
 ```
+- 수정 후 업데이트 
+git pull origin jjh
 
 
 1. 기존환경 정리 
