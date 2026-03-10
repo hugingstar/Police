@@ -87,3 +87,24 @@ ansible-playbook postgres_install.yaml -k
 ```
 psql --version
 ```
+
+## Disable Firewall
+
+- playbook 파일 구문을 체크한다.
+
+```
+ansible-playbook firewall.yaml --syntax-check
+```
+
+- playbook을 실행하여 Docker 설치 자동화 파일을 적용
+- rocky 그룹에 해당하는 호스트에 일괄 적용
+
+```
+ansible-playbook firewall.yaml -k
+```
+
+- 버전 확인
+
+```
+systemctl status firewalld
+```
