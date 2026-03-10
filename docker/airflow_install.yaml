@@ -43,21 +43,28 @@
         replace: |
           \1- ${AIRFLOW_PROJ_DIR:-.}/plugins:/opt/airflow/plugins
           \1- {{ market_map_path }}:/opt/airflow/data/market
-    
-    # 네트워크 공유 설정
-    - name: "Add networks to airflow-worker service"
+        
+    - name: "Add networks to Airflow services (worker, scheduler, webserver, triggerer)"
       ansible.builtin.replace:
         path: "{{ dest_path }}/docker-compose.yaml"
-        regexp: '^(  airflow-worker:.*(\n    .*)*?    restart: always)'
+        # 서비스 이름 부분을 변수({{ item }})로 처리하여 반복 적용
+        regexp: '^(\s+{{ item }}:.*(\n\s+.*)*?\s+restart: always)'
         replace: |
           \1
-              networks:
-                - default
-                - trade_kospi_network
-                - trade_kosdaq_network
-                - trade_nasdaq_network
-                - trade_nyse_network
+                networks:
+                  - default
+                  - cronjob-default
+                  - trade_kospi_network
+                  - trade_kosdaq_network
+                  - trade_nasdaq_network
+                  - trade_nyse_network
+      with_items:
+        - "airflow-worker"
+        - "airflow-scheduler"
+        - "airflow-webserver"
+        - "airflow-triggerer"
     
+    # yaml 하단에 네트워크 정의
     - name: "Define external networks at the end of docker-compose.yaml"
       ansible.builtin.blockinfile:
         path: "{{ dest_path }}/docker-compose.yaml"
@@ -73,7 +80,8 @@
               external: true
             trade_nyse_network:
               external: true
-    
+              
+    # 환경 변수 설정
     - name: "Create or Update .env file (Force disable examples)"
       ansible.builtin.copy:
         dest: "{{ dest_path }}/.env"
@@ -81,6 +89,8 @@
           AIRFLOW_UID=50000
           _PIP_ADDITIONAL_REQUIREMENTS={{ additional_packages }}
           AIRFLOW__CORE__LOAD_EXAMPLES=False
+          AIRFLOW__CORE__DEFAULT_TIMEZONE=Asia/Seoul
+          AIRFLOW__WEBSERVER__DEFAULT_UI_TIMEZONE=Asia/Seoul
         mode: '0777'
     
     - name: "Initialize Airflow Database"
