@@ -30,7 +30,7 @@
 
     - name: 5. Dovecot 기본 설정 (dovecot.conf)
       # 24, 30, 33번 행 관련 주석 해제
-      replace:
+      lineinfile:
         path: /etc/dovecot/dovecot.conf
         regexp: "{{ item.regexp }}"
         line: "{{ item.line }}"
