@@ -11,15 +11,15 @@ import os
 # --- 설정 및 환경 변수 ---
 # 실제 환경에 맞게 수정하거나 Airflow Connections/Variables를 사용하는 권장합니다.
 DB_CONFIG = {
-    "host": "127.0.0.1",
-    "port": 5435,
+    "host": "postgres_kospi_trade",
+    "port": 5432,
     "user": "root",
     "password": "@419lab@",
     "database": "trade"
 }
 
 # CSV 파일이 위치한 기본 경로 (절대 경로 권장)
-BASE_MARKET_PATH = "/root/Police/postgres_server/market" 
+BASE_MARKET_PATH = "/opt/airflow/data/market" 
 
 def fetch_and_upsert(market, execution_date, **kwargs):
     """
@@ -108,7 +108,7 @@ default_args = {
 }
 
 with DAG(
-    'daily_stock_price_parser',
+    'dag_kospi',
     default_args=default_args,
     description='Daily stock price upsert to PostgreSQL',
     schedule_interval='0 20 * * *',  # 매일 저녁 8시 (Cron: Minute Hour Day Month DayOfWeek)
