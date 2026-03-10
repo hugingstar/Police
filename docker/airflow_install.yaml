@@ -57,7 +57,7 @@
                 - trade_kosdaq_network
                 - trade_nasdaq_network
                 - trade_nyse_network
-
+    
     - name: "Define external networks at the end of docker-compose.yaml"
       ansible.builtin.blockinfile:
         path: "{{ dest_path }}/docker-compose.yaml"
@@ -73,14 +73,15 @@
               external: true
             trade_nyse_network:
               external: true
-
-    - name: "Create .env file with AIRFLOW_UID"
-      ansible.builtin.shell: |
-        echo "AIRFLOW_UID=50000" > {{ dest_path }}/.env
-        echo "_PIP_ADDITIONAL_REQUIREMENTS={{ additional_packages }}" >> {{ dest_path }}/.env
-        echo "AIRFLOW__CORE__LOAD_EXAMPLES=False" >> {{ dest_path }}/.env
-      args:
-        creates: "{{ dest_path }}/.env"
+    
+    - name: "Create or Update .env file (Force disable examples)"
+      ansible.builtin.copy:
+        dest: "{{ dest_path }}/.env"
+        content: |
+          AIRFLOW_UID=50000
+          _PIP_ADDITIONAL_REQUIREMENTS={{ additional_packages }}
+          AIRFLOW__CORE__LOAD_EXAMPLES=False
+        mode: '0644'
     
     - name: "Initialize Airflow Database"
       ansible.builtin.shell:
