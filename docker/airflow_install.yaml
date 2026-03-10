@@ -43,27 +43,22 @@
         replace: |
           \1- ${AIRFLOW_PROJ_DIR:-.}/plugins:/opt/airflow/plugins
           \1- {{ market_map_path }}:/opt/airflow/data/market
-        
-    - name: "Add networks to Airflow services (worker, scheduler, webserver, triggerer)"
+
+    - name: "Add networks to x-airflow-common (Inherited by all services)"
       ansible.builtin.replace:
         path: "{{ dest_path }}/docker-compose.yaml"
-        # restart: always 문구를 기준으로 그 바로 아래에 networks를 붙입니다.
-        regexp: '^(\s+{{ item }}:.*(\n\s+.*)*?)\s+(restart: always)'
+        # user 설정 바로 위에 networks 블록을 삽입합니다.
+        regexp: '(\s+)user: "\$\{AIRFLOW_UID:-\d+\}:0"'
         replace: |
-          \1    \3
-          \1    networks:
-          \1      - default
-          \1      - cronjob-default
-          \1      - trade_kospi_network
-          \1      - trade_kosdaq_network
-          \1      - trade_nasdaq_network
-          \1      - trade_nyse_network
-      with_items:
-        - "airflow-worker"
-        - "airflow-scheduler"
-        - "airflow-webserver"
-        - "airflow-triggerer"
-    
+          \1networks:
+          \1  - default
+          \1  - trade_kospi_network
+          \1  - trade_kosdaq_network
+          \1  - trade_nasdaq_network
+          \1  - trade_nyse_network
+          \1user: "${AIRFLOW_UID:-50000}:0"
+
+
     # yaml 하단에 네트워크 정의
     - name: "Define external networks at the end of docker-compose.yaml"
       ansible.builtin.blockinfile:
