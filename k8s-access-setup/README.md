@@ -54,36 +54,5 @@ K8s 1.24+ 버전에 맞춰 SA용 `Secret`을 수동으로 생성하여 접속에
 네임스페이스 자체의 생성 및 삭제는 불가하오니, 반드시 지정된 네임스페이스 내에서 작업을 진행해 주시기 바랍니다.
 
 ### 쿠버네티스 접속 방법 
-1. 각자 전달 받은 conf-user-xxx.yaml 파일을 본인의 작업용 서버로 가져갑니다. 
-2. 파일 이름을 config로 바꾼 뒤, ~/.kube/ 폴더 안에 넣습니다.
-    
-    ```bash
-    # 1. .kube 디렉토리 생성 
-    > mkdir -p ~/.kube
-    
-    # 2. 복사한 파일 경로 이동 
-    > mv conf-user-xxx.yml ~/.kube/config 
-    
-    # 3. 보안을 위해 권한 제한 (권장) 
-    > chmod 600 ~/.kube/config 
-    ```
-    
-3. kubectl 바이너리 도구를 설치합니다. 
-    
-    ```bash
-    # 1. kubectl 설치 확인 
-    > kubectl version --client 
-    
-    # 2. 설치 안되어 있다면 설치 진행 
-    > sudo apt install kubectl 
-    
-    # 3. 다시 설치 확인 
-    > kubectl version --client 
-    ```
-    
-4. 쿠버네티스 클러스터 접속이 되는지 확인합니다. 
-    
-    ```bash
-    # 노드 목록이 보이는지 확인 
-    > kubectl get nodes
-    ```
+**scripts/k8s-client-access.sh 스크립트** 를 실행합니다. 
+자세한 설명은 해당 `README.md`를 확인해주세요! 
