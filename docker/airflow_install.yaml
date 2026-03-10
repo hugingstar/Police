@@ -38,6 +38,7 @@
     - name: "Create .env file with AIRFLOW_UID"
       ansible.builtin.shell: |
         echo "AIRFLOW_UID=$(id -u)" > {{ dest_path }}/.env
+        echo "_PIP_ADDITIONAL_REQUIREMENTS={{ additional_packages }}" >> {{ dest_path }}/.env
       args:
         creates: "{{ dest_path }}/.env"
     
