@@ -117,7 +117,7 @@ with DAG(
 ) as dag:
 
     # 마켓 리스트 (필요에 따라 추가/삭제)
-    markets = ["KOSPI", "KOSDAQ", "NASDAQ"]
+    markets = ["KOSPI", "KOSDAQ", "NASDAQ", "NYSE"]
 
     for mkt in markets:
         PythonOperator(
