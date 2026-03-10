@@ -11,7 +11,7 @@ import os
 # --- 설정 및 환경 변수 ---
 # 실제 환경에 맞게 수정하거나 Airflow Connections/Variables를 사용하는 권장합니다.
 DB_CONFIG = {
-    "host": "postgres_kospi_trade",
+    "host": "postgres_kosdaq_trade",
     "port": 5432,
     "user": "root",
     "password": "@419lab@",
