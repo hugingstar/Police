@@ -4,7 +4,6 @@
   become: yes
   tasks:
     - name: 1. DNS 및 패키지 설치
-      # (기본 DNS 설정 및 dnf 설치 부분은 이전과 동일하므로 생략 가능)
       dnf:
         name: [dovecot, sendmail, sendmail-cf, m4]
         state: present
@@ -22,7 +21,7 @@
         path: /etc/mail/access
         block: |
           kojel.com           RELAY
-          192.168.22          RELAY
+          172.0.0             RELAY
       register: access_db
 
     - name: 4. Access DB 갱신 (makemap)
