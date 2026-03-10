@@ -28,7 +28,9 @@ def fetch_and_upsert(market, execution_date, **kwargs):
     table_name = market.lower()
     # 실행 날짜 기준으로 데이터 수집 (예: 어제 데이터나 오늘 데이터)
     # Airflow의 execution_date(ds)를 사용하면 재실행 시에도 해당 날짜 데이터를 유지할 수 있습니다.
-    target_date = execution_date.strftime("%Y-%m-%d")
+    
+    exec_date = kwargs.get('logical_date') or kwargs.get('execution_date')
+    target_date = exec_date.strftime("%Y-%m-%d")
     
     # 1. 종목 리스트 로드
     csv_path = f"{BASE_MARKET_PATH}/{table_name}/stock_list.csv"
@@ -53,7 +55,7 @@ def fetch_and_upsert(market, execution_date, **kwargs):
             try:
                 # 데이터 호출 (FinanceDataReader)
                 search_code = f"NAVER:{code}" if market in ["KOSPI", "KOSDAQ"] else code
-                full = fdr.DataReader(search_code, start=target_date, end=target_date)
+                full = fdr.DataReader(search_code, start='2024-01-01', end=target_date)
                 
                 if full.empty:
                     continue
@@ -112,12 +114,12 @@ with DAG(
     default_args=default_args,
     description='Daily stock price upsert to PostgreSQL',
     schedule_interval='20 15 * * *',  # 매일 아침 8시 (Cron: Minute Hour Day Month DayOfWeek)
-    catchup=False,
+    catchup=True,
     tags=['finance', 'stock']
 ) as dag:
 
     # 마켓 리스트 (필요에 따라 추가/삭제)
-    markets = ["KOSPI", "KOSDAQ", "NASDAQ", "NYSE"]
+    markets = ["NASDAQ"]
 
     for mkt in markets:
         PythonOperator(
