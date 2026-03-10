@@ -63,11 +63,3 @@
       ansible.builtin.shell:
         cmd: "docker compose up -d --build" # --build 옵션 추가 권장
         chdir: "{{ dest_path }}"
-        
-    - name: "Rocky Linux Firewalld port open"
-      ansible.posix.firewalld:
-        port: 8080/tcp
-        permanent: yes
-        state: enabled
-        immediate: yes
-      ignore_errors: yes
