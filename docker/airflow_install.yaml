@@ -28,26 +28,20 @@
         - 'logs'
         - 'plugins'
       
-    - name: "Download official airflow docker-compose.yaml file"
+    - name: "Get airflow docker-compose.yaml file"
       ansible.builtin.get_url:
         url: "https://airflow.apache.org/docs/apache-airflow/{{ airflow_version }}/docker-compose.yaml"
         dest: "{{ dest_path }}/docker-compose.yaml"
         mode: '0644'
         force: no
     
-    - name: "Create .env file with AIRFLOW_UID and PIP requirements"
+    - name: "Create .env file with AIRFLOW_UID"
       ansible.builtin.shell: |
         echo "AIRFLOW_UID=$(id -u)" > {{ dest_path }}/.env
-        echo "_PIP_ADDITIONAL_REQUIREMENTS='{{ additional_packages }}'" >> {{ dest_path }}/.env
       args:
-        executable: /bin/bash
+        creates: "{{ dest_path }}/.env"
 
-    - name: "Initialize Airflow database (airflow-init)"
-      ansible.builtin.shell:
-        cmd: "docker compose up airflow-init"
-        chdir: "{{ dest_path }}"
-
-    - name: "Start Airflow services in detached mode"
+    - name: Install airflow using docker-compose.yaml file
       ansible.builtin.shell:
         cmd: "docker compose up -d"
         chdir: "{{ dest_path }}"
