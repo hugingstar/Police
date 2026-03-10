@@ -1,0 +1,10 @@
+---
+- name: 메일 서버 자동 구축
+  hosts: mail_servers
+  become: yes
+  tasks:
+    - name: 1. DNS 설정
+      copy:
+        dest: /etc/resolv.conf
+        content: |
+          nameserver 10.22.0.3
