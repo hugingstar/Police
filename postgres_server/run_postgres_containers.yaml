@@ -1,5 +1,5 @@
 ---
-- name: Docker Compose 배포 및 상태 확인
+- name: Postgres server containers 작동 시작
   hosts: airflow
   become: true
   vars:
@@ -7,25 +7,17 @@
     project_path: "/root/Police/postgres_server"
 
   tasks:
-    - name: Run docker compose (Background)
-      community.docker.docker_compose_v2:
-        project_src: "{{ project_path }}"
+    - name: "Docker 네트워크 일괄 생성"
+      community.docker.docker_network:
+        name: "{{ item }}"
         state: present
-        wait: true
-      register: compose_output
+      with_items:
+        - trade_kospi_network
+        - trade_kosdaq_network
+        - trade_nasdaq_network
+        - trade_nyse_network
 
-    - name: Docker compose Results
-      debug:
-        msg: "Docker Compose가 성공적으로 실행되었습니다. (액션: {{ compose_output.actions }})"
-
-    - name: Get Container information
-      community.docker.docker_compose_v2_info:
-        project_src: "{{ project_path }}"
-      register: compose_info
-
-    - name: Service summary
-      debug:
-        msg: "서비스 '{{ item.key }}'는 현재 '{{ item.value.state }}' 상태입니다."
-      loop: "{{ compose_info.services | dict2items }}"
-      loop_control:
-        label: "{{ item.key }}" # 로그 출력 시 서비스 이름만 깔끔하게 표시
+    - name: "Postgres server containers"
+      ansible.builtin.shell:
+        cmd: "docker compose up -d"
+        chdir: "{{ project_path }}"
