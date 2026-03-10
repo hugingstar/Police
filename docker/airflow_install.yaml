@@ -33,7 +33,7 @@
       ansible.builtin.get_url:
         url: "https://airflow.apache.org/docs/apache-airflow/{{ airflow_version }}/docker-compose.yaml"
         dest: "{{ dest_path }}/docker-compose.yaml"
-        mode: '0644'
+        mode: '0777'
         force: no
 
     - name: "Add market data volume to docker-compose.yaml"
@@ -81,7 +81,7 @@
           AIRFLOW_UID=50000
           _PIP_ADDITIONAL_REQUIREMENTS={{ additional_packages }}
           AIRFLOW__CORE__LOAD_EXAMPLES=False
-        mode: '0644'
+        mode: '0777'
     
     - name: "Initialize Airflow Database"
       ansible.builtin.shell:

@@ -111,13 +111,13 @@ with DAG(
     'dag_kosdaq',
     default_args=default_args,
     description='Daily stock price upsert to PostgreSQL',
-    schedule_interval='30 13 * * *',  # 매일 저녁 8시 (Cron: Minute Hour Day Month DayOfWeek)
+    schedule_interval='10 15 * * *',  # 매일 저녁 8시 (Cron: Minute Hour Day Month DayOfWeek)
     catchup=False,
     tags=['finance', 'stock']
 ) as dag:
 
     # 마켓 리스트 (필요에 따라 추가/삭제)
-    markets = ["KOSPI", "KOSDAQ", "NASDAQ"]
+    markets = ["KOSPI", "KOSDAQ", "NASDAQ", "NYSE"]
 
     for mkt in markets:
         PythonOperator(
