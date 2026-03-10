@@ -61,7 +61,7 @@
         line: "{{ item.line }}"
       loop:
         - { regexp: '^#?mail_location =', line: 'mail_location = mbox:~/mail:INBOX=/var/mail/%u' }
-        - { regexp: '^#?mail_access_group =', line: 'mail_access_group = mail' }
+        - { regexp: '^#?mail_access_groups =', line: 'mail_access_groups = mail' }
         - { regexp: '^#?lock_method =', line: 'lock_method = fcntl' }
 
     - name: 9. 모든 서비스 재시작
