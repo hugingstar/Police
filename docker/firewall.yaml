@@ -1,0 +1,21 @@
+---
+- name: Disable Firewall on Rocky Linux 9
+  hosts: airflow
+  become: yes
+
+  tasks:
+    - name: "Firewalld 서비스 중지 및 비활성화"
+      ansible.builtin.systemd:
+        name: firewalld
+        state: stopped
+        enabled: no
+
+    - name: "방화벽 상태 확인 (선택 사항)"
+      ansible.builtin.command: systemctl status firewalld
+      register: firewall_status
+      failed_when: false # 상태 확인 시 에러나도 플레이북 중단 방지
+      changed_when: false
+
+    - name: "현재 상태 출력"
+      ansible.builtin.debug:
+        msg: "{{ firewall_status.stdout_lines[2] | default('Firewalld is inactive') }}"
