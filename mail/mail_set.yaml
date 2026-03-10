@@ -30,7 +30,7 @@
         path: /etc/mail/access
         block: |
           kojel.com           RELAY
-          192.168.22          RELAY
+          172.0.0             RELAY
       register: access_result
 
     - name: 5. Access DB 생성 (변경사항 있을 때만 실행)
