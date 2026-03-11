@@ -1,11 +1,11 @@
 CREATE TABLE IF NOT EXISTS "nasdaq_log" (
-                    Time_stamp TEXT,
-                    Open TEXT,
-                    High TEXT,
-                    Low TEXT,
-                    Close TEXT,
-                    Volume TEXT,
-                    Change TEXT,
-                    Symbol TEXT,
-                    Name TEXT
+                    time_stamp TEXT,
+                    open TEXT,
+                    high TEXT,
+                    low TEXT,
+                    close TEXT,
+                    volume TEXT,
+                    change TEXT,
+                    symbol TEXT,
+                    name TEXT
                 );

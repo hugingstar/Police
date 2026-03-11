@@ -1,11 +1,11 @@
 CREATE TABLE IF NOT EXISTS "kospi_log" (
-                    Time_stamp TEXT,
-                    Open TEXT,
-                    High TEXT,
-                    Low TEXT,
-                    Close TEXT,
-                    Volume TEXT,
-                    Change TEXT,
-                    Code TEXT,
-                    Name TEXT
+                    time_stamp TEXT,
+                    open TEXT,
+                    high TEXT,
+                    low TEXT,
+                    close TEXT,
+                    volume TEXT,
+                    change TEXT,
+                    code TEXT,
+                    name TEXT
                 );
