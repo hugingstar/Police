@@ -67,9 +67,3 @@ SELECT * FROM kospi_log LIMIT 1;
 Ctrl + P + Q
 ```
 
-- Airflow가 실행되어 있는 상태에서 실행하여야 한다.
-- Data Collector는 ansible 스크립트를 사용하여 airflow 내에 있는 dags로 위치시킨다.
-
-```
-ansible-playbook pymove_to_dags.yaml -k
-```
