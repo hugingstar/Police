@@ -11,8 +11,7 @@ git clone -b yslee --single-branch https://github.com/hugingstar/Police.git
 ```
 
 - Airflow set-up automation
-    - 이 방법은 Postgres DB server를 자동으로 생성한다.
-    - 그 후 
+- 이 방법은 Postgres DB server를 자동으로 생성한다.
 
 ```
 ansible-playbook ansinfra_airflow_build.yaml -k
@@ -23,7 +22,7 @@ ansible-playbook ansinfra_airflow_build.yaml -k
 - Ansible로 네트워크생성 > DB 컴포즈 한번에 실행하기
 
 ```
-
+ansible-playbook run_containers.yaml -k
 ```
 
 - 위의 자동화 과정 세부 사항은 아래에 정리합니다.

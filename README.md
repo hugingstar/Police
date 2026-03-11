@@ -109,6 +109,9 @@ ansible all -m user -a "name=yslee" -k
 ### (6) 전체 인프라 설치 자동화
 
 #### Step1 (Install): 
+
+- 이 과정에서는 인프라 구축을 위한 기본적인 프로그램을 설치한다.
+
 (1) Firewall > (2) Docker install > (3) Postgres installation on linux
 
 ```
@@ -116,6 +119,9 @@ ansible-playbook ansinfra_process.yaml -k
 ```
 
 #### Step2 (Containers): 
+
+- 이 과정에서는 에어플로우 빌드 및 모듈 셋팅과정을 자동화한다.
+
 (4) Postgres server using docker (5) Runnning Airflow (6) pyfiles move to dags folder
 
 ```

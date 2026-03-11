@@ -1,5 +1,5 @@
 ---
-- name: Move specific file from one folder to another
+- name: Move specific file from one folder to another (Analysis)
   hosts: airflow  # 대상 서버 호스트 그룹명으로 변경 가능
   tasks:
     - name: Copy the file to the destination
