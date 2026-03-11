@@ -228,6 +228,7 @@ def run_analysis_task(**kwargs):
     BASE_MARKET_PATH = "/opt/airflow/data/market" 
 
     stock_list_path = f"{BASE_MARKET_PATH}/{market.lower()}/stock_list.csv"
+    
     if not os.path.exists(stock_list_path):
         print(f"Error: {stock_list_path} not found.")
         return
