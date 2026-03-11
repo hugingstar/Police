@@ -35,6 +35,12 @@
         dest: "{{ dest_path }}/docker-compose.yaml"
         mode: '0777'
         force: no
+    
+    - name: "Change LOAD_EXAMPLES to False in docker-compose.yaml"
+      ansible.builtin.replace:
+        path: "{{ dest_path }}/docker-compose.yaml"
+        regexp: "AIRFLOW__CORE__LOAD_EXAMPLES: 'true'"
+        replace: "AIRFLOW__CORE__LOAD_EXAMPLES: 'false'"
 
     - name: "Add market data volume to docker-compose.yaml"
       ansible.builtin.replace:
