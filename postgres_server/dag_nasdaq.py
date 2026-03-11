@@ -37,7 +37,7 @@ def fetch_and_upsert(market, **kwargs):
     domain_.columns = [c.lower() for c in domain_.columns]
     
     # 마켓별 인덱스 설정
-    code_index = "Code" if market in ["KOSPI", "KOSDAQ"] else "Symbol"
+    code_index = "code" if market in ["KOSPI", "KOSDAQ"] else "symbol"
     time_col = "time_stamp"
 
     # 2. DB 연결
