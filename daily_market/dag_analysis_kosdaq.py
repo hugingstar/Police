@@ -262,7 +262,7 @@ default_args = {
 }
 
 with DAG(
-    'dag_analysis_kospi',
+    'dag_analysis_kosdaq',
     default_args=default_args,
     description='기술 분석 후 일자별 시그널 시트 생성',
     schedule_interval='0 21 * * *', # 매일 21시

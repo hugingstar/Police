@@ -112,7 +112,7 @@ default_args = {
 }
 
 with DAG(
-    'dag_kospi',
+    'dag_collector_kospi',
     default_args=default_args,
     description='Daily stock price upsert to PostgreSQL',
     schedule_interval='0 20 * * *',  # 매일 저녁 8시 (Cron: Minute Hour Day Month DayOfWeek)
