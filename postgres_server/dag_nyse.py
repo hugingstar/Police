@@ -34,6 +34,7 @@ def fetch_and_upsert(market, execution_date, **kwargs):
         return
 
     domain_ = pd.read_csv(csv_path, encoding="utf-8-sig")
+    domain_.columns = [c.lower() for c in domain_.columns]
     
     # 마켓별 인덱스 설정
     code_index = "Code" if market in ["KOSPI", "KOSDAQ"] else "Symbol"
