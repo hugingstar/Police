@@ -1,0 +1,7 @@
+- import_playbook: 01-disable-swap.yaml
+- import_playbook: 02-sysctl-k8s-config.yaml
+- import_playbook: 03-setup-container-runtime.yaml
+- import_playbook: 04-k8s-binary-setup.yaml
+- import_playbook: 05-k8s-master-init.yaml
+- import_playbook: 06-install-calico.yaml
+- import_playbook: 07-k8s-worker-join.yaml
