@@ -7,5 +7,6 @@ CREATE TABLE IF NOT EXISTS "nyse_log" (
                     volume TEXT,
                     change TEXT,
                     symbol TEXT,
-                    name TEXT
+                    name TEXT,
+                    PRIMARY KEY (time_stamp, code)
                 );

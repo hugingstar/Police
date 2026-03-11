@@ -7,5 +7,6 @@ CREATE TABLE IF NOT EXISTS "nasdaq_log" (
                     volume TEXT,
                     change TEXT,
                     symbol TEXT,
-                    name TEXT
+                    name TEXT,
+                    PRIMARY KEY (time_stamp, code)
                 );

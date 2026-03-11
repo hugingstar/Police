@@ -7,5 +7,6 @@ CREATE TABLE IF NOT EXISTS "kosdaq_log" (
                     volume TEXT,
                     change TEXT,
                     code TEXT,
-                    name TEXT
+                    name TEXT,
+                    PRIMARY KEY (time_stamp, code)
                 );
