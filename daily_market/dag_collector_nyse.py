@@ -61,6 +61,9 @@ def fetch_and_upsert(market, execution_date, **kwargs):
 
                 full.columns = [c.lower() for c in full.columns]
 
+                if 'adj close' in full.columns:
+                    full = full.drop(columns=['adj close'])
+
                 # 데이터 정제
                 full[code_index] = code
                 full["name"] = name
