@@ -60,7 +60,7 @@ def fetch_and_upsert(market, execution_date, **kwargs):
 
                 # 데이터 정제
                 full[code_index] = code
-                full["Name"] = name
+                full["name"] = name
                 full.index = pd.to_datetime(full.index)
                 full.index.name = time_col
                 full.index = full.index.normalize().strftime('%Y-%m-%d')
