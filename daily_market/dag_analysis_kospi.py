@@ -16,8 +16,6 @@ from airflow.operators.python import PythonOperator
 warnings.filterwarnings("ignore", category=UserWarning)
 warnings.filterwarnings(action='ignore', category=pd.errors.PerformanceWarning)
 
-local_tz = pendulum.timezone("Asia/Seoul")
-
 # --- 1. 데이터 취득부 (DataAcquirer) ---
 class DataAcquirer:
     def __init__(self, host, port, user, password, db_name, market_name, start_date, end_date, code):
@@ -257,6 +255,8 @@ def run_make_sheet_task(**kwargs):
     MakeSheet(start=start_date, end=end_date, market_name=market)
 
 # --- 5. DAG 정의 ---
+
+local_tz = pendulum.timezone("Asia/Seoul")
 
 default_args = {
     'owner': 'airflow',

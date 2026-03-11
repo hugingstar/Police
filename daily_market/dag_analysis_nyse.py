@@ -256,6 +256,8 @@ def run_make_sheet_task(**kwargs):
 
 # --- 5. DAG 정의 ---
 
+local_tz = pendulum.timezone("Asia/Seoul")
+
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
