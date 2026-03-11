@@ -81,8 +81,9 @@
           AIRFLOW_UID=50000
           _PIP_ADDITIONAL_REQUIREMENTS={{ additional_packages }}
           AIRFLOW__CORE__LOAD_EXAMPLES=False
+          AIRFLOW__CORE__DEFAULT_TIMEZONE=Asia/Seoul
           AIRFLOW__WEBSERVER__DEFAULT_UI_TIMEZONE=Asia/Seoul
-        mode: '0777'
+        mode: '0644'
     
     - name: "Initialize Airflow Database"
       ansible.builtin.shell:
