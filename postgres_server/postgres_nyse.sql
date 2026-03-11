@@ -8,5 +8,5 @@ CREATE TABLE IF NOT EXISTS "nyse_log" (
                     change TEXT,
                     symbol TEXT,
                     name TEXT,
-                    PRIMARY KEY (time_stamp, code)
+                    PRIMARY KEY (time_stamp, symbol)
                 );
