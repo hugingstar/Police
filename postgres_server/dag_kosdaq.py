@@ -7,6 +7,7 @@ import FinanceDataReader as fdr
 import psycopg2
 from psycopg2 import extras
 import os
+import pendulum
 
 # --- 설정 및 환경 변수 ---
 # 실제 환경에 맞게 수정하거나 Airflow Connections/Variables를 사용하는 권장합니다.
@@ -17,6 +18,8 @@ DB_CONFIG = {
     "password": "@419lab@",
     "database": "trade"
 }
+
+local_tz = pendulum.timezone("Asia/Seoul")
 
 # CSV 파일이 위치한 기본 경로 (절대 경로 권장)
 BASE_MARKET_PATH = "/opt/airflow/data/market" 
@@ -102,8 +105,8 @@ def fetch_and_upsert(market, execution_date, **kwargs):
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
-    'start_date': datetime(2024, 1, 1), # 적절한 과거 날짜 설정
-    'retries': 1,
+    'start_date': datetime(2024, 1, 1, tzinfo=local_tz),
+    'retries': 0,
     'retry_delay': timedelta(minutes=5),
 }
 
