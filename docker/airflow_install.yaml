@@ -8,33 +8,46 @@
     additional_packages: "finance-datareader pandas numpy psycopg2-binary DateTime ta schedule comtypes natsort scipy"
     market_map_path: "/root/Police/postgres_server/market"
     result_map_path: "/root/Data"
+    airflow_uid: "50000"
     
   tasks:
     - name: "Create airflow directory architecture"
       ansible.builtin.file:
         path: "{{ dest_path }}"
         state: directory
-        owner: root
-        group: root
-        mode: '0777'
+        owner: "{{ airflow_uid }}"
+        group: "0" # root group
+        mode: '0775'
 
     - name: "Airflow directory subdirectories (dags, logs, plugins)"
       ansible.builtin.file:
         path: "{{ dest_path }}/{{ item }}"
         state: directory
-        owner: root
-        group: root
-        mode: '0777'
+        owner: "{{ airflow_uid }}"
+        group: "0"
+        mode: '0775'
       with_items:
         - 'dags'
         - 'logs'
         - 'plugins'
-      
+    
+    - name: "Create result and market data directories with correct permissions"
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        owner: "{{ airflow_uid }}"
+        group: "0"
+        mode: '0775'
+        recurse: yes
+      with_items:
+        - "{{ result_map_path }}"
+        - "{{ market_map_path }}"
+
     - name: "Get airflow docker-compose.yaml file"
       ansible.builtin.get_url:
         url: "https://airflow.apache.org/docs/apache-airflow/{{ airflow_version }}/docker-compose.yaml"
         dest: "{{ dest_path }}/docker-compose.yaml"
-        mode: '0777'
+        mode: '0664'
         force: no
     
     - name: "Change LOAD_EXAMPLES to False in docker-compose.yaml"
@@ -86,7 +99,7 @@
       ansible.builtin.copy:
         dest: "{{ dest_path }}/.env"
         content: |
-          AIRFLOW_UID=50000
+          AIRFLOW_UID={{ airflow_uid }}
           _PIP_ADDITIONAL_REQUIREMENTS={{ additional_packages }}
           AIRFLOW__CORE__LOAD_EXAMPLES=False
           AIRFLOW__CORE__DEFAULT_TIMEZONE=Asia/Seoul

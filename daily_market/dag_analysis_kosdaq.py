@@ -217,7 +217,7 @@ class MakeSheet():
 def run_analysis_task(**kwargs):
     """테스크 1: 모든 종목 기술 지표 계산 및 저장"""
     market = kwargs.get('market', 'KOSDAQ')
-    host = os.environ.get("HOST", "127.0.0.1")
+    host = os.environ.get("HOST", "postgres_kosdaq_trade")
     port = os.environ.get("PORT", "5432")
     user = os.environ.get("USER", "root")
     password = os.environ.get("PASSWORD", "@419lab@")
