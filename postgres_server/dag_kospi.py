@@ -21,16 +21,11 @@ DB_CONFIG = {
 # CSV 파일이 위치한 기본 경로 (절대 경로 권장)
 BASE_MARKET_PATH = "/opt/airflow/data/market" 
 
-def fetch_and_upsert(market, execution_date, **kwargs):
+def fetch_and_upsert(market, **kwargs):
     """
     특정 마켓의 데이터를 가져와 DB에 Upsert하는 핵심 로직
     """
     table_name = market.lower()
-    # 실행 날짜 기준으로 데이터 수집 (예: 어제 데이터나 오늘 데이터)
-    # Airflow의 execution_date(ds)를 사용하면 재실행 시에도 해당 날짜 데이터를 유지할 수 있습니다.
-
-    exec_date = kwargs.get('logical_date') or kwargs.get('execution_date')
-    target_date = exec_date.strftime("%Y-%m-%d")
     
     # 1. 종목 리스트 로드
     csv_path = f"{BASE_MARKET_PATH}/{table_name}/stock_list.csv"
@@ -42,7 +37,7 @@ def fetch_and_upsert(market, execution_date, **kwargs):
     
     # 마켓별 인덱스 설정
     code_index = "Code" if market in ["KOSPI", "KOSDAQ"] else "Symbol"
-    time_col = "Time_stamp"
+    time_col = "time_stamp"
 
     # 2. DB 연결
     conn = psycopg2.connect(**DB_CONFIG)
@@ -50,19 +45,21 @@ def fetch_and_upsert(market, execution_date, **kwargs):
     try:
         for idx, row in domain_.iterrows():
             code = row[code_index]
-            name = row["Name"]
+            name = row["name"]
             
             try:
                 # 데이터 호출 (FinanceDataReader)
                 search_code = f"NAVER:{code}" if market in ["KOSPI", "KOSDAQ"] else code
-                full = fdr.DataReader(search_code, start='2024-01-01', end=target_date)
+                full = fdr.DataReader(search_code, start='2024-01-01')
                 
                 if full.empty:
                     continue
+                
+                full.columns = [c.lower() for c in full.columns]
 
                 # 데이터 정제
                 full[code_index] = code
-                full["Name"] = name
+                full["name"] = name
                 full.index = pd.to_datetime(full.index)
                 full.index.name = time_col
                 full.index = full.index.normalize().strftime('%Y-%m-%d')
@@ -114,7 +111,7 @@ with DAG(
     default_args=default_args,
     description='Daily stock price upsert to PostgreSQL',
     schedule_interval='0 20 * * *',  # 매일 저녁 8시 (Cron: Minute Hour Day Month DayOfWeek)
-    catchup=True,
+    catchup=False,
     tags=['finance', 'stock']
 ) as dag:
 
