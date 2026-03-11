@@ -7,6 +7,7 @@
     airflow_version: "2.10.2"
     additional_packages: "finance-datareader pandas numpy psycopg2-binary DateTime ta schedule comtypes natsort scipy"
     market_map_path: "/root/Police/postgres_server/market"
+    result_map_path: "/root/Data"
 
   tasks:
     - name: "Create airflow directory architecture"
@@ -49,6 +50,7 @@
         replace: |
           \1- ${AIRFLOW_PROJ_DIR:-.}/plugins:/opt/airflow/plugins
           \1- {{ market_map_path }}:/opt/airflow/data/market
+          \1- {{ result_map_path }}:/opt/airflow/data/Data
     
     - name: "Add networks to all airflow services"
       ansible.builtin.replace:
