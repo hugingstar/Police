@@ -2,3 +2,4 @@
 - import_playbook: /root/Police/postgres_server/run_postgres_containers.yaml
 - import_playbook: /root/Police/docker/airflow_install.yaml
 - import_playbook: /root/Police/postgres_server/pymove_to_dags.yaml
+- import_playbook: /root/Police/daily_market/pymove_to_dags.yaml
