@@ -16,6 +16,8 @@ from airflow.operators.python import PythonOperator
 warnings.filterwarnings("ignore", category=UserWarning)
 warnings.filterwarnings(action='ignore', category=pd.errors.PerformanceWarning)
 
+local_tz = pendulum.timezone("Asia/Seoul")
+
 # --- 1. 데이터 취득부 (DataAcquirer) ---
 class DataAcquirer:
     def __init__(self, host, port, user, password, db_name, market_name, start_date, end_date, code):
@@ -259,7 +261,7 @@ def run_make_sheet_task(**kwargs):
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
-    'start_date': datetime(2024, 1, 1),
+    'start_date': datetime(2024, 1, 1, tzinfo=local_tz),
     'retries': 1,
     'retry_delay': timedelta(minutes=5),
 }
@@ -268,7 +270,7 @@ with DAG(
     'dag_analysis_kospi',
     default_args=default_args,
     description='기술 분석 후 일자별 시그널 시트 생성',
-    schedule_interval='0 21 * * 1-5', # 매일 21시
+    schedule_interval='0 21 * * 1-5',
     catchup=False,
     tags=['finance', 'analysis']
 ) as dag:
