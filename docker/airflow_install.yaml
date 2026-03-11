@@ -5,7 +5,7 @@
   vars:
     dest_path: "/root/Cronjob"
     airflow_version: "2.10.2"
-    additional_packages: "finance-datareader pandas numpy psycopg2-binary"
+    additional_packages: "finance-datareader pandas numpy psycopg2-binary DateTime ta schedule comtypes natsort scipy"
     market_map_path: "/root/Police/postgres_server/market"
 
   tasks:
