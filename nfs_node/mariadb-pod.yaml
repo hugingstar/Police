@@ -1,26 +1,24 @@
 ---
-- name: Install MariaDB on NFS-Node
-  hosts: localhost
-  become: yes
-
-  tasks:
-    - name: 1. MariaDB 패키지 설치
-      ansible.builtin.dnf:
-        name: 
-          - mariadb-server
-          - mariadb
-        state: present
-
-    - name: 2. MariaDB 서비스 시작 및 자동 활성화
-      ansible.builtin.systemd:
-        name: mariadb
-        state: started
-        enabled: yes
-
-    - name: 3. DB 접속 테스트 (정상 동작 확인)
-      ansible.builtin.command: mariadb -e "SELECT VERSION();"
-      register: db_version
-
-    - name: 4. 설치 결과 출력
-      ansible.builtin.debug:
-        msg: "MariaDB 설치 완료! 버전: {{ db_version.stdout }}"
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mariadb-pod
+  labels:
+    app: mariadb
+spec:
+  containers:
+  - name: mariadb
+    image: mariadb:10.6
+    env:
+    - name: MARIADB_ROOT_PASSWORD
+      value: "P@ssw0rd"
+    ports:
+    - containerPort: 3306
+    volumeMounts:
+    - name: nfs-db-volume
+      mountPath: /var/lib/mysql
+  volumes:
+  - name: nfs-db-volume
+    nfs:
+      server: 10.15.0.170
+      path: /nfs_k8s/db
