@@ -11,6 +11,7 @@ from datetime import datetime, timedelta
 from scipy.signal import argrelextrema
 from airflow import DAG
 from airflow.operators.python import PythonOperator
+import pendulum
 
 # 경고 무시
 warnings.filterwarnings("ignore", category=UserWarning)
