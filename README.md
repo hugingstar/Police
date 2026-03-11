@@ -108,7 +108,15 @@ ansible all -m user -a "name=yslee" -k
 
 ### (6) 전체 인프라 설치 자동화
 
-#### Step1 (Install): 
+#### 관련 프로젝트를 Clone한다.
+
+- 아래 깃허브 레파지토리에서 프로젝트를 클론한다.
+
+```
+git clone -b yslee --single-branch https://github.com/hugingstar/Police.git
+```
+
+#### Step2 (Install): 
 
 - 이 과정에서는 인프라 구축을 위한 기본적인 프로그램을 설치한다.
 
@@ -118,7 +126,7 @@ ansible all -m user -a "name=yslee" -k
 ansible-playbook ansinfra_process.yaml -k
 ```
 
-#### Step2 (Containers): 
+#### Step3 (Containers): 
 
 - 이 과정에서는 에어플로우 빌드 및 모듈 셋팅과정을 자동화한다.
 
