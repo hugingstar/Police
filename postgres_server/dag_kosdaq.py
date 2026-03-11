@@ -95,6 +95,7 @@ def fetch_and_upsert(market, execution_date, **kwargs):
                 print(f"[{market}] {code} {name} - {len(data)} rows upserted.")
 
             except Exception as e:
+                conn.rollback()
                 print(f"Error fetching {code}: {e}")
                 continue
 
