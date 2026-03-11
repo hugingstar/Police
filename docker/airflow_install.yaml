@@ -1,5 +1,5 @@
 ---
-- name: Airflow installation with Correct Permissions
+- name: Airflow installation
   hosts: airflow
   become: yes
   vars:
@@ -8,47 +8,34 @@
     additional_packages: "finance-datareader pandas numpy psycopg2-binary DateTime ta schedule comtypes natsort scipy"
     market_map_path: "/root/Police/postgres_server/market"
     result_map_path: "/root/Data"
-    # Airflow 기본 UID 정의
-    airflow_uid: "50000"
+    
 
   tasks:
     - name: "Create airflow directory architecture"
       ansible.builtin.file:
         path: "{{ dest_path }}"
         state: directory
-        owner: "{{ airflow_uid }}"
-        group: "0" # root group
-        mode: '0775'
+        owner: root
+        group: root
+        mode: '0777'
 
     - name: "Airflow directory subdirectories (dags, logs, plugins)"
       ansible.builtin.file:
         path: "{{ dest_path }}/{{ item }}"
         state: directory
-        owner: "{{ airflow_uid }}"
-        group: "0"
-        mode: '0775'
+        owner: root
+        group: root
+        mode: '0777'
       with_items:
         - 'dags'
         - 'logs'
         - 'plugins'
-
-    - name: "Create result and market data directories with correct permissions"
-      ansible.builtin.file:
-        path: "{{ item }}"
-        state: directory
-        owner: "{{ airflow_uid }}"
-        group: "0"
-        mode: '0775'
-        recurse: yes
-      with_items:
-        - "{{ result_map_path }}"
-        - "{{ market_map_path }}"
-
+      
     - name: "Get airflow docker-compose.yaml file"
       ansible.builtin.get_url:
         url: "https://airflow.apache.org/docs/apache-airflow/{{ airflow_version }}/docker-compose.yaml"
         dest: "{{ dest_path }}/docker-compose.yaml"
-        mode: '0664'
+        mode: '0777'
         force: no
     
     - name: "Change LOAD_EXAMPLES to False in docker-compose.yaml"
@@ -69,6 +56,7 @@
     - name: "Add networks to all airflow services"
       ansible.builtin.replace:
         path: "{{ dest_path }}/docker-compose.yaml"
+        # 4가지 서비스 이름을 (A|B|C|D) 형태로 묶어 한 번에 매칭합니다.
         regexp: '(^[ ]+airflow-(?:webserver|scheduler|worker|triggerer):[\s\S]*?restart: always)'
         replace: |
           \1
@@ -95,11 +83,11 @@
             trade_nyse_network:
               external: true
     
-    - name: "Create or Update .env file"
+    - name: "Create or Update .env file (Force disable examples)"
       ansible.builtin.copy:
         dest: "{{ dest_path }}/.env"
         content: |
-          AIRFLOW_UID={{ airflow_uid }}
+          AIRFLOW_UID=50000
           _PIP_ADDITIONAL_REQUIREMENTS={{ additional_packages }}
           AIRFLOW__CORE__LOAD_EXAMPLES=False
           AIRFLOW__CORE__DEFAULT_TIMEZONE=Asia/Seoul
@@ -113,5 +101,5 @@
     
     - name: "Install airflow using docker-compose.yaml file"
       ansible.builtin.shell:
-        cmd: "docker compose up -d"
+        cmd: "docker compose up -d --build" # --build 옵션 추가 권장
         chdir: "{{ dest_path }}"
