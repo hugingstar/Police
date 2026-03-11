@@ -225,7 +225,10 @@ def run_analysis_task(**kwargs):
     ref_date = os.environ.get("REF_DATE", "2024-01-01")
     end_date = datetime.now().strftime('%Y-%m-%d')
 
-    stock_list_path = f"market/{market.lower()}/stock_list.csv"
+    BASE_MARKET_PATH = "/opt/airflow/data/market" 
+
+    stock_list_path = f"{BASE_MARKET_PATH}/{market.lower()}/stock_list.csv"
+
     if not os.path.exists(stock_list_path):
         print(f"Error: {stock_list_path} not found.")
         return
