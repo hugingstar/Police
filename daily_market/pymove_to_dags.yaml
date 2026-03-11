@@ -4,24 +4,24 @@
   tasks:
     - name: Copy the file to the destination
       ansible.builtin.copy:
-        src: /root/Police/postgres_server/dag_collector_kospi.py
-        dest: /root/Cronjob/dags/dag_collector_kospi.py
+        src: /root/Police/daily_market/dag_analysis_kospi.py
+        dest: /root/Cronjob/dags/dag_analysis_kospi.py
         mode: '0777'
     
     - name: Copy the file to the destination
       ansible.builtin.copy:
-        src: /root/Police/postgres_server/dag_collector_kosdaq.py
-        dest: /root/Cronjob/dags/dag_collector_kosdaq.py
+        src: /root/Police/daily_market/dag_analysis_kosdaq.py
+        dest: /root/Cronjob/dags/dag_analysis_kosdaq.py
         mode: '0777'
     
     - name: Copy the file to the destination
       ansible.builtin.copy:
-        src: /root/Police/postgres_server/dag_collector_nasdaq.py
-        dest: /root/Cronjob/dags/dag_collector_nasdaq.py
+        src: /root/Police/daily_market/dag_analysis_nasdaq.py
+        dest: /root/Cronjob/dags/dag_analysis_nasdaq.py
         mode: '0777'
 
     - name: Copy the file to the destination
       ansible.builtin.copy:
-        src: /root/Police/postgres_server/dag_collector_nyse.py
-        dest: /root/Cronjob/dags/dag_collector_nyse.py
+        src: /root/Police/daily_market/dag_analysis_nyse.py
+        dest: /root/Cronjob/dags/dag_analysis_nyse.py
         mode: '0777'
