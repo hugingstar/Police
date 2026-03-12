@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Kojel 사내 메일 발송</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; display: flex; background-color: #f4f7f6; min-height: 100vh; }
+        .sidebar { width: 250px; background-color: #2c3e50; color: white; padding-top: 30px; position: fixed; height: 100%; z-index: 100; }
+        .sidebar h2 { text-align: center; font-size: 1.2em; margin-bottom: 30px; color: #ecf0f1; }
+        .sidebar a { display: block; padding: 15px 25px; color: #bdc3c7; text-decoration: none; transition: 0.3s; border-left: 4px solid transparent; }
+        .sidebar a:hover { background-color: #34495e; color: white; }
+        .sidebar a.active { background-color: #34495e; color: white; border-left: 4px solid #059669; }
+        
+        /* 상단 바 공간 확보를 위해 padding-top 추가 */
+        .main-content { margin-left: 250px; flex-grow: 1; padding: 50px; padding-top: 80px; }
+        
+        /* --- 로그아웃 상단 바 스타일 추가 --- */
+        .top-bar {
+            position: fixed;
+            top: 0;
+            right: 0;
+            left: 250px;
+            height: 60px;
+            background-color: white;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            padding: 0 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            z-index: 90;
+        }
+        .user-info { margin-right: 20px; font-size: 0.9em; color: #555; }
+        .user-id { font-weight: bold; color: #2c3e50; }
+        .logout-btn {
+            padding: 8px 16px;
+            background-color: #e74c3c;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 0.85em;
+            transition: background 0.3s;
+        }
+        .logout-btn:hover { background-color: #c0392b; }
+        /* ------------------------------ */
+        
+        .form-container { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 800px; }
+        h2.page-title { color: #333; margin-top: 0; }
+        
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: bold; color: #555; }
+        .form-group input, .form-group textarea { 
+            width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; font-size: 1em;
+        }
+        .form-group textarea { height: 200px; resize: vertical; }
+        
+        .btn-submit { 
+            background-color: #059669; color: white; padding: 12px 24px; border: none; border-radius: 4px; 
+            cursor: pointer; font-size: 1em; font-weight: bold; width: 100%; transition: 0.3s;
+        }
+        .btn-submit:hover { background-color: #047857; }
+        .sender-info { font-size: 0.9em; color: #666; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+
+    {% if msg %}
+    <script>
+        alert("{{ msg }}");
+    </script>
+    {% endif %}
+
+    <div class="sidebar">
+        <h2>관리자 메뉴</h2>
+        <a href="/login">로그인</a>
+        <a href="/insert">협력사 정보 등록</a>
+        <a href="/users">협력사 등록 정보 목록</a>
+        <a href="/mail" class="active">메일 발송</a>
+        <a href="/inbox">수신함</a>
+        <a href="/sent">발신함</a>
+        <a href="/delete">협력사 등록 정보 삭제</a>
+    </div>
+
+    <div class="top-bar">
+        <div class="user-info">
+            <span class="email">{{ email }}</span>님 접속 중
+        </div>
+        <a href="/logout" class="logout-btn">로그아웃</a>
+    </div>
+
+    <div class="main-content">
+        <div class="form-container">
+            <h2 class="page-title">✉️ 사내 메일 발송</h2>
+            <hr>
+            <p class="sender-info">발신자: <strong>{{ email }}</strong></p>
+            
+            <form action="/send_mail" method="post">
+                <div class="form-group">
+                    <label for="receiver">받는 사람 (Email)</label>
+                    <input type="email" id="receiver" name="receiver" placeholder="example@withkojel.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="subject">제목</label>
+                    <input type="text" id="subject" name="subject" placeholder="메일 제목을 입력하세요" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="content">내용</label>
+                    <textarea id="content" name="content" placeholder="메일 내용을 작성하세요" required></textarea>
+                </div>
+                
+                <button type="submit" class="btn-submit">메일 보내기</button>
+            </form>
+        </div>
+    </div>
+
+</body>
+</html>

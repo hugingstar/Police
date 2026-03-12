@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>수신함 - 관리자 시스템</title>
+    <style>
+        /* --- 공통 레이아웃 (Sent 페이지와 통일) --- */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; display: flex; background-color: #f4f7f6; min-height: 100vh; }
+        .sidebar { width: 250px; background-color: #2c3e50; color: white; padding-top: 30px; position: fixed; height: 100%; z-index: 100; }
+        .sidebar h2 { text-align: center; font-size: 1.2em; margin-bottom: 30px; color: #ecf0f1; }
+        .sidebar a { display: block; padding: 15px 25px; color: #bdc3c7; text-decoration: none; transition: 0.3s; border-left: 4px solid transparent; }
+        .sidebar a:hover { background-color: #34495e; color: white; }
+        .sidebar a.active { background-color: #34495e; color: white; border-left: 4px solid #059669; }
+        
+        .main-content { margin-left: 250px; flex-grow: 1; padding: 50px; padding-top: 80px; }
+        .container { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h2.page-title { color: #333; margin-top: 0; }
+
+        /* --- 상단 바 --- */
+        .top-bar {
+            position: fixed; top: 0; right: 0; left: 250px; height: 60px;
+            background-color: white; display: flex; justify-content: flex-end;
+            align-items: center; padding: 0 30px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); z-index: 90;
+        }
+        .user-info { margin-right: 20px; font-size: 0.9em; color: #555; }
+        .user-id { font-weight: bold; color: #2c3e50; }
+        .logout-btn {
+            padding: 8px 16px; background-color: #e74c3c; color: white;
+            text-decoration: none; border-radius: 4px; font-size: 0.85em; transition: background 0.3s;
+        }
+        .logout-btn:hover { background-color: #c0392b; }
+
+        /* --- 테이블 스타일 --- */
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; table-layout: fixed; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #ddd; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        th { background-color: #f8fafc; color: #333; font-weight: bold; }
+        
+        tbody tr:hover { background-color: #f1f5f9; cursor: pointer; }
+        .subject-cell { color: #2563eb; text-decoration: none; font-weight: 500; }
+        .badge { background-color: #059669; color: white; padding: 3px 8px; border-radius: 4px; font-size: 0.75em; margin-right: 8px; vertical-align: middle; }
+        .no-mail { text-align: center; padding: 50px; color: #888; }
+
+        /* --- 모달 스타일 (Sent와 100% 동일) --- */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); backdrop-filter: blur(3px); }
+        .modal-content { 
+            background-color: #fff; margin: 2% auto; width: 90%; max-width: 1000px; height: 80vh; 
+            border-radius: 12px; display: flex; flex-direction: column; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3); animation: slideIn 0.2s ease-out; 
+        }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .modal-header { padding: 20px 30px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background: #fcfcfc; border-radius: 12px 12px 0 0; }
+        .modal-body { padding: 30px 40px; overflow-y: auto; flex: 1; font-size: 1.05em; line-height: 1.7; color: #2d3436; }
+        .modal-footer { padding: 15px 30px; border-top: 1px solid #eee; text-align: right; }
+        .close-btn { font-size: 30px; cursor: pointer; color: #999; }
+        .btn-close { background-color: #2c3e50; color: white; border: none; padding: 10px 25px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        
+        .mail-meta { background: #f8fafc; padding: 20px; border-radius: 8px; margin-bottom: 25px; border: 1px solid #e2e8f0; }
+        .mail-meta p { margin: 8px 0; font-size: 0.95em; color: #475569; }
+        .mail-meta strong { color: #1e293b; width: 80px; display: inline-block; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h2>관리자 메뉴</h2>
+        <a href="/login">로그인</a>
+        <a href="/insert">협력사 정보 등록</a>
+        <a href="/users">협력사 등록 정보 목록</a>
+        <a href="/mail">메일 발송</a>
+        <a href="/inbox" class="active">수신함</a>
+        <a href="/sent">발신함</a>
+        <a href="/delete">협력사 등록 정보 삭제</a>
+    </div>
+
+    <div class="top-bar">
+        <div class="user-info">
+            <span class="user-id">{{ generated_email }}</span>님 접속 중
+        </div>
+        <a href="/logout" class="logout-btn">로그아웃</a>
+    </div>
+
+    <div class="main-content">
+        <div class="container">
+            <h2 class="page-title">📥 수신함</h2>
+            <p style="color: #666;">수신된 메일의 내용을 확인하려면 해당 행을 클릭하세요.</p>
+            <hr>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 25%;">보낸 사람</th>
+                        <th style="width: 45%;">제목</th>
+                        <th style="width: 30%;">수신 일시</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for email in emails %}
+                    <tr onclick="showMailDetail(this)">
+                        <td>{{ email.from }}</td>
+                        <td class="subject-cell"><span class="badge">New</span>{{ email.subject }}</td>
+                        <td>{{ email.date }}</td>
+                        <td style="display: none;">
+                            <textarea class="email-content">{{ email.content }}</textarea>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="3" class="no-mail">수신된 메일이 없습니다.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="mailModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="m-subject" style="margin:0; font-size: 1.4em; color: #1e293b;"></h2>
+                <span class="close-btn" onclick="closeModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="mail-meta">
+                    <p><strong>보낸 사람</strong> <span id="m-from"></span></p>
+                    <p><strong>수신 일시</strong> <span id="m-date"></span></p>
+                </div>
+                <div id="m-content" style="white-space: pre-wrap; word-break: break-all; min-height: 200px;"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-close" onclick="closeModal()">닫기</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showMailDetail(row) {
+            // 1. 클릭한 행에서 New 배지 찾아서 숨기기
+            const badge = row.querySelector('.badge');
+            if (badge) {
+                badge.style.display = 'none';
+            }
+
+            // 2. 데이터 추출
+            const cells = row.getElementsByTagName('td');
+            if (cells.length < 3) return;
+
+            const from = cells[0].innerText;
+            // 'New' 글자가 제목 변수에 섞이지 않도록 처리
+            const subject = cells[1].innerText.replace('New', '').trim();
+            const date = cells[2].innerText;
+            const content = row.querySelector('.email-content').value;
+
+            // 3. 모달 데이터 채우기
+            document.getElementById('m-from').innerText = from;
+            document.getElementById('m-subject').innerText = subject;
+            document.getElementById('m-date').innerText = date;
+            document.getElementById('m-content').innerText = content;
+
+            // 4. 모달 표시
+            const modal = document.getElementById('mailModal');
+            modal.style.display = 'block';
+            document.querySelector('.modal-body').scrollTop = 0;
+        }
+
+        function closeModal() {
+            document.getElementById('mailModal').style.display = 'none';
+        }
+
+        // 배경 클릭 시 닫기
+        window.onclick = function(event) {
+            const modal = document.getElementById('mailModal');
+            if (event.target == modal) { closeModal(); }
+        }
+
+        // ESC 키 입력 시 닫기
+        document.addEventListener('keydown', function(event) {
+            if (event.key === "Escape") { closeModal(); }
+        });
+    </script>
+</body>
+</html>
