@@ -11,6 +11,14 @@
       - trade_nyse_network
 
   tasks:
+    - name: "Create airflow directory architecture"
+      ansible.builtin.file:
+        path: "{{ dest_path }}"
+        state: directory
+        owner: "{{ airflow_uid }}"
+        group: "0" # root group
+        mode: '0775'
+
     - name: "1. Create Prometheus Configuration File (Added cAdvisor)"
       ansible.builtin.copy:
         dest: "{{ dest_path }}/prometheus.yml"
