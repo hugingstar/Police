@@ -1,12 +1,12 @@
 ---
-- name: Deploy Prometheus and Grafana
+- name: Deploy Full Monitoring Stack (Airflow + Hardware resource)
   hosts: airflow
   become: yes
   vars:
     monitor_path: "/root/Monitoring"
     prometheus_uid: "65534" # prometheus 기본 유저 ID
     grafana_uid: "472"      # grafana 기본 유저 ID
-    # Airflow가 사용하는 네트워크 중 하나를 기본으로 연결
+    # Airflow가 사용하는 네트워크 연동
     target_network: "trade_kospi_network"
 
   tasks:
@@ -34,8 +34,13 @@
                 - targets: ['localhost:9090']
 
             - job_name: 'airflow'
+              metrics_path: '/admin/metrics' # 플러그인 메트릭 경로
               static_configs:
-                - targets: ['airflow-webserver:8080'] # Airflow가 동일 네트워크에 있을 때
+                - targets: ['airflow-webserver:8080']
+
+            - job_name: 'node-exporter' # 하드웨어 지표 수집 설정
+              static_configs:
+                - targets: ['node-exporter:9100']
         mode: '0644'
 
     - name: "Set directory permissions for Prometheus and Grafana"
@@ -67,6 +72,22 @@
                 - '--storage.tsdb.path=/prometheus'
               ports:
                 - "9090:9090"
+              networks:
+                - {{ target_network }}
+              restart: always
+
+            # 추가된 Node Exporter: 호스트 자원 정보 수집
+            node-exporter:
+              image: prom/node-exporter:latest
+              container_name: node-exporter
+              volumes:
+                - /proc:/host/proc:ro
+                - /sys:/host/sys:ro
+                - /:/rootfs:ro
+              command:
+                - '--path.procfs=/host/proc'
+                - '--path.sysfs=/host/sys'
+                - '--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($|/)'
               networks:
                 - {{ target_network }}
               restart: always
