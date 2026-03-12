@@ -21,7 +21,7 @@ data:
     <html>
     <head><title>Kojel Web</title></head>
     <body style="text-align:center; padding-top:50px; background-color:#f4f4f4;">
-        <h1>🚀 웹 서버 가동 완료!</h1>
+        <h1> 웹 서버 가동 완료!</h1>
         <p>Namespace: web | MetalLB IP: 10.22.0.10</p>
     </body>
     </html>
@@ -41,6 +41,10 @@ spec:
       labels:
         app: web-service
     spec:
+      dnsPolicy: "None"  
+      dnsConfig:
+        nameservers:
+          - 10.22.0.3    
       containers:
       - name: nginx
         image: nginx:latest
@@ -80,7 +84,7 @@ metadata:
   annotations:
     metallb.io/loadBalancerIPs: 10.22.0.10
 spec:
-  type: NodePort
+  type: LoadBlancer
   selector:
     app: web-service
   ports:

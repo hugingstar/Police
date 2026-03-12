@@ -54,7 +54,7 @@
           @ IN NS  ns1.kojel.com.
           @ IN MX 10 mail.kojel.com.
           ns1  IN A  10.22.0.3
-          www  IN A  10.22.0.4
+          www  IN A  10.22.0.10
           mail IN A  10.22.0.2
     - name: 6. DNS 설정
       copy:
