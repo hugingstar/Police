@@ -18,7 +18,7 @@
        path: "/root/nfs_node/{{ item }}"
        state: directory
        mode: '0777'
-    loop: [ 'Data', 'static', 'was', 'db', 'config', 'monitoring', 'airflow']
+    loop: ['static', 'was', 'db', 'config', 'monitoring', 'Data/KOSPI/A1Sheet', 'Data/KOSPI/B1Sheet', 'Data/KOSDAQ/A1Sheet', 'Data/KOSDAQ/B1Sheet', 'Data/NASDAQ/A1Sheet', 'Data/NASDAQ/B1Sheet', 'Data/NYSE/A1Sheet', 'Data/NYSE/B1Sheet']
 
   - name: 2. /etc/exports 파일에 설정 추가
     lineinfile:
