@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nfs-pv-was
+  labels:
+    service: was
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes: ["ReadWriteMany"]
+  nfs:
+    server: 10.15.0.170
+    path: /nfs_k8s/was
