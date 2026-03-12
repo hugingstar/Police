@@ -1,0 +1,100 @@
+---
+- name: Deploy Prometheus and Grafana
+  hosts: airflow
+  become: yes
+  vars:
+    monitor_path: "/root/Monitoring"
+    prometheus_uid: "65534" # prometheus 기본 유저 ID
+    grafana_uid: "472"      # grafana 기본 유저 ID
+    # Airflow가 사용하는 네트워크 중 하나를 기본으로 연결
+    target_network: "trade_kospi_network"
+
+  tasks:
+    - name: "Create Monitoring directory architecture"
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: '0775'
+      with_items:
+        - "{{ monitor_path }}"
+        - "{{ monitor_path }}/prometheus"
+        - "{{ monitor_path }}/grafana"
+
+    - name: "Create Prometheus configuration file"
+      ansible.builtin.copy:
+        dest: "{{ monitor_path }}/prometheus/prometheus.yml"
+        content: |
+          global:
+            scrape_interval: 15s
+            evaluation_interval: 15s
+
+          scrape_configs:
+            - job_name: 'prometheus'
+              static_configs:
+                - targets: ['localhost:9090']
+
+            - job_name: 'airflow'
+              static_configs:
+                - targets: ['airflow-webserver:8080'] # Airflow가 동일 네트워크에 있을 때
+        mode: '0644'
+
+    - name: "Set directory permissions for Prometheus and Grafana"
+      ansible.builtin.file:
+        path: "{{ item.path }}"
+        state: directory
+        owner: "{{ item.owner }}"
+        group: "0"
+        recurse: yes
+      with_items:
+        - { path: "{{ monitor_path }}/prometheus", owner: "{{ prometheus_uid }}" }
+        - { path: "{{ monitor_path }}/grafana", owner: "{{ grafana_uid }}" }
+
+    - name: "Create docker-compose.yml for Monitoring"
+      ansible.builtin.copy:
+        dest: "{{ monitor_path }}/docker-compose.yml"
+        content: |
+          version: '3.8'
+
+          services:
+            prometheus:
+              image: prom/prometheus:latest
+              container_name: prometheus
+              volumes:
+                - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+                - prometheus_data:/prometheus
+              command:
+                - '--config.file=/etc/prometheus/prometheus.yml'
+                - '--storage.tsdb.path=/prometheus'
+              ports:
+                - "9090:9090"
+              networks:
+                - {{ target_network }}
+              restart: always
+
+            grafana:
+              image: grafana/grafana:latest
+              container_name: grafana
+              volumes:
+                - grafana_data:/var/lib/grafana
+              environment:
+                - GF_SA_DEFAULT_ADMIN_PASSWORD=admin
+                - GF_ST_DEFAULT_TIMEZONE=Asia/Seoul
+              ports:
+                - "3000:3000"
+              networks:
+                - {{ target_network }}
+              restart: always
+
+          volumes:
+            prometheus_data:
+            grafana_data:
+
+          networks:
+            {{ target_network }}:
+              external: true
+        mode: '0644'
+
+    - name: "Run Monitoring Stack"
+      ansible.builtin.shell:
+        cmd: "docker compose up -d"
+        chdir: "{{ monitor_path }}"

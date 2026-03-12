@@ -9,6 +9,8 @@
     market_map_path: "/root/Police/postgres_server/market"
     result_map_path: "/root/Data"
     airflow_uid: "50000"
+    # Prometheus Exporter 플러그인 다운로드 경로
+    exporter_url: "https://raw.githubusercontent.com/treu/airflow-prometheus-exporter/master/plugins/airflow_prometheus_exporter.py"
     
   tasks:
     - name: "Check if {{ dest_path }} exists"
@@ -36,6 +38,15 @@
         - 'dags'
         - 'logs'
         - 'plugins'
+
+    # Prometheus exporter plugin setting
+    - name: "Install Airflow Prometheus Exporter Plugin"
+      ansible.builtin.get_url:
+        url: "{{ exporter_url }}"
+        dest: "{{ dest_path }}/plugins/airflow_prometheus_exporter.py"
+        owner: "{{ airflow_uid }}"
+        group: "0"
+        mode: '0644'
     
     - name: "Create result and market data directories with correct permissions"
       ansible.builtin.file:
@@ -110,6 +121,8 @@
           AIRFLOW__CORE__LOAD_EXAMPLES=False
           AIRFLOW__CORE__DEFAULT_TIMEZONE=Asia/Seoul
           AIRFLOW__WEBSERVER__DEFAULT_UI_TIMEZONE=Asia/Seoul
+          AIRFLOW__CORE__EXPOSE_CONFIG=True
+          AIRFLOW__RECEPTACLE__ENABLE_METRICS=True
         mode: '0644'
     
     - name: "Initialize Airflow Database"
