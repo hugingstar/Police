@@ -221,38 +221,114 @@ ansible-playbook Police/ansinfra_airflow_build.yaml -k
 #### Step5 NFS Node로 분석 결과 표출
 
 - 분석 결과는 NFS로 표출하여 향후 쿠버네티스 인프라와 연결될 수 있도록 한다.
+- `push_to_nfs_node.sh`를 생성하여 nfs 서버 환경 설정 자동화한다.
 
 ```
+# push_to_nfs_node.sh 파일 생성
+vi push_to_nfs_node.sh
+
+# 작성한 내용
 #!/bin/bash
 
 # 1. nfs-utils 설치
 echo "NFS 유틸리티를 설치합니다..."
 dnf install -y nfs-utils
 
-# 2. 공유 디렉토리 생성 (없을 경우)
-SHARE_DIR="/root/Data"
-if [ ! -d "$SHARE_DIR" ]; then
-    echo "공유 디렉토리 $SHARE_DIR 를 생성합니다."
-    mkdir -p "$SHARE_DIR"
-fi
+# 2. 공유 설정 정의 (경로와 옵션을 1:1로 매칭)
+# 형식: "경로|옵션"
+# 나중에 특정 경로의 IP나 권한만 바꾸고 싶다면 이 리스트에서 해당 줄만 수정하세요.
+CONFIGS=(
+    "/root/Data/KOSPI/A1Sheet|10.15.0.170(rw,sync,no_root_squash)"
+    "/root/Data/KOSPI/B1Sheet|10.15.0.170(rw,sync,no_root_squash)"
+    "/root/Data/KOSDAQ/A1Sheet|10.15.0.170(rw,sync,no_root_squash)"
+    "/root/Data/KOSDAQ/B1Sheet|10.15.0.170(rw,sync,no_root_squash)"
+    "/root/Data/NASDAQ/A1Sheet|10.15.0.170(rw,sync,no_root_squash)"
+    "/root/Data/NASDAQ/B1Sheet|10.15.0.170(rw,sync,no_root_squash)"
+    "/root/Data/NYSE/A1Sheet|10.15.0.170(rw,sync,no_root_squash)"
+    "/root/Data/NYSE/B1Sheet|10.15.0.170(rw,sync,no_root_squash)"
+)
 
-# 3. /etc/exports 권한 설정
-# 기존에 설정이 있는지 확인 후 없을 때만 추가합니다.
-EXPORT_LINE="/root/Data 10.15.0.170(rw,sync,no_root_squash)"
-if ! grep -q "$EXPORT_LINE" /etc/exports; then
-    echo "설정값을 /etc/exports에 추가합니다."
-    echo "$EXPORT_LINE" | sudo tee -a /etc/exports
-else
-    echo "이미 동일한 설정이 /etc/exports에 존재합니다."
-fi
+echo "디렉토리 생성 및 /etc/exports 설정을 시작합니다..."
 
-# 4. 설정 적용
+for entry in "${CONFIGS[@]}"; do
+    # 파이프(|) 기호를 기준으로 경로와 옵션을 분리합니다.
+    SHARE_DIR="${entry%%|*}"
+    NFS_OPTION="${entry##*|}"
+
+    # 디렉토리 생성 (없을 경우)
+    if [ ! -d "$SHARE_DIR" ]; then
+        echo "디렉토리 생성 중: $SHARE_DIR"
+        mkdir -p "$SHARE_DIR"
+    fi
+
+    # /etc/exports 설정 추가 (정확한 매칭을 위해 경로와 옵션을 합쳐서 체크)
+    EXPORT_LINE="$SHARE_DIR $NFS_OPTION"
+    
+    # 이미 해당 경로에 대한 설정이 있는지 확인 (경로명으로 검색)
+    if ! grep -qF "$SHARE_DIR" /etc/exports; then
+        echo "설정 추가: $EXPORT_LINE"
+        echo "$EXPORT_LINE" | sudo tee -a /etc/exports > /dev/null
+    else
+        echo "이미 설정이 존재하여 건너뜁니다: $SHARE_DIR"
+        # 팁: 기존 설정을 덮어쓰고 싶다면 여기서 sed 등을 사용해 교체할 수 있습니다.
+    fi
+done
+
+# 3. 설정 적용
 echo "NFS 수출 테이블을 갱신합니다..."
 exportfs -rav
 
-# 5. 서비스 시작 및 활성화
+# 4. 서비스 시작 및 활성화
 echo "NFS 서버 서비스를 시작하고 활성화합니다..."
 systemctl enable --now nfs-server
 
-echo "NFS 설정이 완료되었습니다."
+echo "모든 NFS 경로 설정이 완료되었습니다."
+```
+
+```
+# 실행 권한 부여
+chmod +x push_to_nfs_node.sh
+
+# 실행
+./push_to_nfs_node.sh
+```
+
+- NFS Client 측(10.15.0.170)에서 설정하는 방법
+
+```
+# 파일 생성
+vi mount_from_airflow.sh
+
+# 작성한 내용
+#!/bin/bash
+
+echo ">>> NFS 마운트를 시작합니다..."
+
+# 1. 마운트될 폴더들 생성 (이미 있으면 통과)
+mkdir -p /root/nfs_node/Data/KOSPI/A1Sheet /root/nfs_node/Data/KOSPI/B1Sheet
+mkdir -p /root/nfs_node/Data/KOSDAQ/A1Sheet /root/nfs_node/Data/KOSDAQ/B1Sheet
+mkdir -p /root/nfs_node/Data/NASDAQ/A1Sheet /root/nfs_node/Data/NASDAQ/B1Sheet
+mkdir -p /root/nfs_node/Data/NYSE/A1Sheet /root/nfs_node/Data/NYSE/B1Sheet
+
+# 2. KOSPI 마운트
+mount -t nfs 10.17.0.2:/root/Data/KOSPI/A1Sheet /root/nfs_node/Data/KOSPI/A1Sheet
+mount -t nfs 10.17.0.2:/root/Data/KOSPI/B1Sheet /root/nfs_node/Data/KOSPI/B1Sheet
+
+# 3. KOSDAQ 마운트
+mount -t nfs 10.17.0.2:/root/Data/KOSDAQ/A1Sheet /root/nfs_node/Data/KOSDAQ/A1Sheet
+mount -t nfs 10.17.0.2:/root/Data/KOSDAQ/B1Sheet /root/nfs_node/Data/KOSDAQ/B1Sheet
+
+# 4. NASDAQ 마운트
+mount -t nfs 10.17.0.2:/root/Data/NASDAQ/A1Sheet /root/nfs_node/Data/NASDAQ/A1Sheet
+mount -t nfs 10.17.0.2:/root/Data/NASDAQ/B1Sheet /root/nfs_node/Data/NASDAQ/B1Sheet
+
+# 5. NYSE 마운트
+mount -t nfs 10.17.0.2:/root/Data/NYSE/A1Sheet /root/nfs_node/Data/NYSE/A1Sheet
+mount -t nfs 10.17.0.2:/root/Data/NYSE/B1Sheet /root/nfs_node/Data/NYSE/B1Sheet
+
+echo ">>> 마운트 완료!"
+echo "------------------------------------------------------"
+
+# 6. 디스크 상태 확인
+df -h | grep "10.17.0.2"
 ```
