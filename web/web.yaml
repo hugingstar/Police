@@ -7,7 +7,7 @@ data:
   default.conf: |
     server {
         listen 80;
-        server_name kojel.com;
+        server_name kojel.com www.kojel.com;
         location / {
             root /usr/share/nginx/html;
             index index.html;
