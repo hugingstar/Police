@@ -1,6 +1,6 @@
 ---
 - name : NFS 서버 설정 자동화
-  hosts: nfs_node
+  hosts: all
   become: yes
 
   tasks:
