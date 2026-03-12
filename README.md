@@ -212,3 +212,47 @@ ansible-playbook Police/ansinfra_process.yaml -k
 ```
 ansible-playbook Police/ansinfra_airflow_build.yaml -k
 ```
+
+#### Step4 (Daily Analysis):
+
+- Airflow 웹 페이지에 들어가서 Activate 상태를 확인하면서 Task의 데이터 Pipeline이 설정한 시간에 올바르게 작동하는지를 확인한다.
+
+
+#### Step5 NFS Node로 분석 결과 표출
+
+- 분석 결과는 NFS로 표출하여 향후 쿠버네티스 인프라와 연결될 수 있도록 한다.
+
+```
+#!/bin/bash
+
+# 1. nfs-utils 설치
+echo "NFS 유틸리티를 설치합니다..."
+dnf install -y nfs-utils
+
+# 2. 공유 디렉토리 생성 (없을 경우)
+SHARE_DIR="/root/Data"
+if [ ! -d "$SHARE_DIR" ]; then
+    echo "공유 디렉토리 $SHARE_DIR 를 생성합니다."
+    mkdir -p "$SHARE_DIR"
+fi
+
+# 3. /etc/exports 권한 설정
+# 기존에 설정이 있는지 확인 후 없을 때만 추가합니다.
+EXPORT_LINE="/root/Data 10.15.0.170(rw,sync,no_root_squash)"
+if ! grep -q "$EXPORT_LINE" /etc/exports; then
+    echo "설정값을 /etc/exports에 추가합니다."
+    echo "$EXPORT_LINE" | sudo tee -a /etc/exports
+else
+    echo "이미 동일한 설정이 /etc/exports에 존재합니다."
+fi
+
+# 4. 설정 적용
+echo "NFS 수출 테이블을 갱신합니다..."
+exportfs -rav
+
+# 5. 서비스 시작 및 활성화
+echo "NFS 서버 서비스를 시작하고 활성화합니다..."
+systemctl enable --now nfs-server
+
+echo "NFS 설정이 완료되었습니다."
+```
