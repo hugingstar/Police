@@ -154,6 +154,7 @@ class MakeSheet():
         self.start = start
         self.end = end
         self.file_path = f"/opt/airflow/data/Data/{self.market_name}/A1Sheet"
+        self._create_folder(self.file_path)
         self.TIME = "time_stamp" # 템플릿의 SQL 컬럼명에 맞춤
 
         weekday_list = pd.date_range(start=self.start, end=self.end, freq='B').strftime('%Y-%m-%d').tolist()
@@ -162,7 +163,7 @@ class MakeSheet():
             files = [f for f in os.listdir(self.file_path) if f.endswith('.csv')]
             stock_info = {self.extract_name_part(f): self.extract_code_part(f) for f in files}
         except FileNotFoundError:
-            print(f"Error: Path {self.file_path} not found.")
+            print(f"Error: Path {self.file_path} 파일을 찾을 수 없습니다.")
             return
 
         for dcode in weekday_list:
@@ -229,9 +230,9 @@ def run_analysis_task(**kwargs):
     BASE_MARKET_PATH = "/opt/airflow/data/market" 
 
     stock_list_path = f"{BASE_MARKET_PATH}/{market.lower()}/stock_list.csv"
-
+    
     if not os.path.exists(stock_list_path):
-        print(f"Error: {stock_list_path} not found.")
+        print(f"Error: {stock_list_path} 파일을 찾을 수 없습니다.")
         return
 
     df_dns = pd.read_csv(stock_list_path, encoding="utf-8-sig")
@@ -251,7 +252,7 @@ def run_make_sheet_task(**kwargs):
     market = kwargs.get('market', 'KOSPI')
     # 어제~오늘 날짜 기준으로 시트 생성 (스케줄러 실행 시점 고려)
     end_date = datetime.now().strftime('%Y-%m-%d')
-    start_date = (datetime.now() - timedelta(days=2)).strftime('%Y-%m-%d')
+    start_date = (datetime.now() - timedelta(days=5)).strftime('%Y-%m-%d')
     
     MakeSheet(start=start_date, end=end_date, market_name=market)
 
