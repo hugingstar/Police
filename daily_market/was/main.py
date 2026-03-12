@@ -11,10 +11,10 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 templates = Jinja2Templates(directory=os.path.join(current_dir, "templates"))
 
 # 1. 데이터 루트 경로 (WSL 경로)
-DATA_ROOT_DIR = "/home/yslee/TRADE/Data/DTAS/Data"
+DATA_ROOT_DIR = "/root/Data"
 
 # 2. 종목 코드 매핑 파일 루트 경로 (Windows 경로)
-STOCK_LIST_ROOT = "market"
+STOCK_LIST_ROOT = "/root/Police/postgres_server/market"
 
 MARKETS = ["KOSPI", "KOSDAQ", "NASDAQ", "NYSE"]
 
