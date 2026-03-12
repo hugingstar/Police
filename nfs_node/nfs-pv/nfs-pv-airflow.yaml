@@ -10,4 +10,4 @@ spec:
   accessModes: ["ReadWriteMany"]
   nfs:
     server: 10.15.0.170
-    path: root/nfs_node/airflow
+    path: /root/nfs_node/airflow

@@ -10,4 +10,4 @@ spec:
   accessModes: ["ReadWriteMany"]
   nfs:
     server: 10.15.0.170
-    path: /nfs_k8s/was
+    path: /root/nfs_node/was
