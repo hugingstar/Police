@@ -27,7 +27,7 @@ ansible-playbook docker_install.yaml --syntax-check
 ```
 
 - playbook을 실행하여 Docker 설치 자동화 파일을 적용
-- rocky 그룹에 해당하는 호스트에 일괄 적용
+- airflow 그룹에 해당하는 호스트에 일괄 적용
 
 ```
 ansible-playbook docker_install.yaml -k
@@ -54,7 +54,7 @@ ansible-playbook airflow_install.yaml --syntax-check
 ```
 
 - playbook을 실행하여 Docker 설치 자동화 파일을 적용
-- rocky 그룹에 해당하는 호스트에 일괄 적용
+- airflow 그룹에 해당하는 호스트에 일괄 적용
 
 ```
 ansible-playbook airflow_install.yaml -k
@@ -88,7 +88,7 @@ ansible-playbook postgres_install.yaml --syntax-check
 ```
 
 - playbook을 실행하여 Docker 설치 자동화 파일을 적용
-- rocky 그룹에 해당하는 호스트에 일괄 적용
+- airflow 그룹에 해당하는 호스트에 일괄 적용
 
 ```
 ansible-playbook postgres_install.yaml -k
@@ -109,7 +109,7 @@ ansible-playbook firewall.yaml --syntax-check
 ```
 
 - playbook을 실행하여 Docker 설치 자동화 파일을 적용
-- rocky 그룹에 해당하는 호스트에 일괄 적용
+- airflow 그룹에 해당하는 호스트에 일괄 적용
 
 ```
 ansible-playbook firewall.yaml -k
@@ -119,4 +119,19 @@ ansible-playbook firewall.yaml -k
 
 ```
 systemctl status firewalld
+```
+
+## Prometheus/Grafana container
+
+- playbook 파일 구문을 체크한다.
+
+```
+ansible-playbook grafana_install.yaml --syntax-check
+```
+
+- playbook을 실행하여 Grafana와 Prometheus 설치 자동화 파일을 적용
+- airflow 그룹에 해당하는 호스트에 일괄 적용
+
+```
+ansible-playbook grafana_install.yaml -k
 ```

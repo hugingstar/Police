@@ -3,3 +3,4 @@
 - import_playbook: /root/Police/docker/airflow_install.yaml
 - import_playbook: /root/Police/daily_market/collector_to_dags.yaml
 - import_playbook: /root/Police/daily_market/analysis_to_dags.yaml
+- import_playbook: /root/Police/docker/grafana_install.yaml
