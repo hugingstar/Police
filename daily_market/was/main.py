@@ -6,7 +6,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from datetime import date
 #
-app = FastAPI(title="GGeolmuBird")
+app = FastAPI(title="Kojel Private Fund")
 current_dir = os.path.dirname(os.path.abspath(__file__))
 templates = Jinja2Templates(directory=os.path.join(current_dir, "templates"))
 
@@ -18,7 +18,7 @@ STOCK_LIST_ROOT = "/root/Police/postgres_server/market"
 
 MARKETS = ["KOSPI", "KOSDAQ", "NASDAQ", "NYSE"]
 
-ALL_COLUMNS = [ "Name", "Open", "High", "Low", "Close", "Volume", "Close_diff_first", "Close_diff_second",
+ALL_COLUMNS = [ "name", "open", "high", "low", "close", "volume", "Close_diff_first", "Close_diff_second",
     "Close_rate_first", "Close_rate_second", "CurrencyVolume", "obv_change", "OBV",
     "MA5", "MA50", "MA60", "MA120", "MA200", "MA224", "MA20", "STD20", "BB_Upper", "BB_Lower",
     "RSI", "RSI_rate_first", "RSI_rate_second", "RSI2", "RSI3", "RSI4", "RSI5", "RSI6", "RSI7", "RSI8", "RSI9",
@@ -59,7 +59,7 @@ async def read_root(request: Request):
         "chart_data": "{}", # 빈 데이터
         "selected_date": date.today().isoformat(),
         "selected_market": "KOSPI",
-        "selected_columns": ["Name", "Open", "Close", "Volume"] 
+        "selected_columns": ["name", "open", "close", "volume"] 
     })
 
 @app.post("/", response_class=HTMLResponse)
@@ -77,9 +77,9 @@ async def search_data(
     
     if os.path.exists(map_file_path):
         try:
-            ref_df = pd.read_csv(map_file_path, dtype={'Code': str, 'Symbol': str})
-            code_col = 'Code' if 'Code' in ref_df.columns else 'Symbol'
-            stock_map = dict(zip(ref_df['Name'], ref_df[code_col]))
+            ref_df = pd.read_csv(map_file_path, dtype={'code': str, 'symbol': str})
+            code_col = 'code' if 'code' in ref_df.columns else 'symbol'
+            stock_map = dict(zip(ref_df['name'], ref_df[code_col]))
         except Exception as e:
             print(f"Error loading stock list: {e}")
 
@@ -105,10 +105,10 @@ async def search_data(
             try:
                 df = pd.read_csv(file_path, encoding='utf-8-sig')
                 
-                # 1. 차트용 데이터 추출 (Name, RSI5, CCI5)
+                # 1. 차트용 데이터 추출 (name, RSI5, CCI5)
                 # 컬럼이 존재하는지 확인 후 데이터 추출 (NaN은 0으로 처리)
-                if set(['Name', 'RSI5', 'CCI5']).issubset(df.columns):
-                    chart_subset = df[['Name', 'RSI5', 'CCI5']].fillna(0)
+                if set(['name', 'RSI5', 'CCI5']).issubset(df.columns):
+                    chart_subset = df[['name', 'RSI5', 'CCI5']].fillna(0)
                     chart_data[key] = chart_subset.to_dict(orient='records')
 
                 # 2. 테이블 데이터 처리
@@ -120,7 +120,7 @@ async def search_data(
                 counts[key] = len(df_filtered)
                 
                 # 링크 생성
-                if 'Name' in df_filtered.columns:
+                if 'name' in df_filtered.columns:
                     def create_link(name):
                         code = stock_map.get(name)
                         if not code: return name
@@ -129,10 +129,10 @@ async def search_data(
                         else:
                             return f'<a href="https://finance.yahoo.com/quote/{code}" target="_blank" class="stock-link">{name}</a>'
 
-                    df_filtered['Name'] = df_filtered['Name'].apply(create_link)
+                    df_filtered['name'] = df_filtered['name'].apply(create_link)
 
                 formatters = {}
-                for col in ['Open', 'High', 'Low', 'Close', 'Volume']:
+                for col in ['open', 'high', 'low', 'close', 'volume']:
                     if col in df_filtered.columns:
                         formatters[col] = lambda x: '{:,.0f}'.format(x)
                 
