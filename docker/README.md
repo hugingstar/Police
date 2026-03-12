@@ -120,18 +120,3 @@ ansible-playbook firewall.yaml -k
 ```
 systemctl status firewalld
 ```
-
-## Prometheus/Grafana container
-
-- playbook 파일 구문을 체크한다.
-
-```
-ansible-playbook grafana_install.yaml --syntax-check
-```
-
-- playbook을 실행하여 Grafana와 Prometheus 설치 자동화 파일을 적용
-- airflow 그룹에 해당하는 호스트에 일괄 적용
-
-```
-ansible-playbook grafana_install.yaml -k
-```
