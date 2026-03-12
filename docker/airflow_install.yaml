@@ -10,7 +10,7 @@
     result_map_path: "/root/Data"
     airflow_uid: "50000"
     # Prometheus Exporter 플러그인 다운로드 경로
-    exporter_url: "https://raw.githubusercontent.com/treu/airflow-prometheus-exporter/master/plugins/airflow_prometheus_exporter.py"
+    exporter_url: "https://raw.githubusercontent.com/treu/airflow-prometheus-exporter/main/airflow_prometheus_exporter/plugins/airflow_prometheus_exporter.py"
     
   tasks:
     - name: "Check if {{ dest_path }} exists"
