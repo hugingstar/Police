@@ -103,7 +103,7 @@ async def search_data(
 
         if os.path.exists(file_path):
             try:
-                df = pd.read_csv(file_path, encoding='utf-9-sig')
+                df = pd.read_csv(file_path, encoding='utf-8-sig')
                 
                 # 1. 차트용 데이터 추출 (Name, RSI5, CCI5)
                 # 컬럼이 존재하는지 확인 후 데이터 추출 (NaN은 0으로 처리)
