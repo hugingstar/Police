@@ -103,7 +103,7 @@ async def search_data(
 
         if os.path.exists(file_path):
             try:
-                df = pd.read_csv(file_path, encoding='cp949')
+                df = pd.read_csv(file_path, encoding='utf-9-sig')
                 
                 # 1. 차트용 데이터 추출 (Name, RSI5, CCI5)
                 # 컬럼이 존재하는지 확인 후 데이터 추출 (NaN은 0으로 처리)
@@ -168,4 +168,4 @@ async def search_data(
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
