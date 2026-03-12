@@ -117,6 +117,8 @@
       ansible.builtin.blockinfile:
         path: "{{ dest_path }}/.env"
         marker: "# {mark} ANSIBLE MANAGED MONITORING"
+        create: yes  # 파일이 없으면 생성
+        mode: '0644' # 파일 권한 설정
         block: |
           AIRFLOW__METRICS__STATS_D_ON=True
           AIRFLOW__METRICS__STATS_D_HOST=statsd-exporter
