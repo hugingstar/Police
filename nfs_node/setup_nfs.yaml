@@ -41,4 +41,4 @@
     service:
       name: nfs-server
       state: restarted
-      when: exports_result.changed
+    when: exports_result.changed
