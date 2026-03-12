@@ -4,6 +4,7 @@
   become: yes
   vars:
     dest_path: "/root/Cronjob"
+    airflow_uid: "50000"
     networks:
       - trade_kospi_network
       - trade_kosdaq_network
@@ -11,6 +12,11 @@
       - trade_nyse_network
 
   tasks:
+    - name: "Check if {{ dest_path }} exists"
+      ansible.builtin.stat:
+        path: "{{ dest_path }}"
+      register: dest_path_stat
+
     - name: "Create airflow directory architecture"
       ansible.builtin.file:
         path: "{{ dest_path }}"
@@ -18,6 +24,7 @@
         owner: "{{ airflow_uid }}"
         group: "0" # root group
         mode: '0775'
+      when: not dest_path_stat.stat.exists  # 디렉토리가 존재하지 않을 때만 실행
 
     - name: "1. Create Prometheus Configuration File (Added cAdvisor)"
       ansible.builtin.copy:

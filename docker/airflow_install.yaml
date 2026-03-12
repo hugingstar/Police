@@ -11,6 +11,11 @@
     airflow_uid: "50000"
     
   tasks:
+    - name: "Check if {{ dest_path }} exists"
+      ansible.builtin.stat:
+        path: "{{ dest_path }}"
+      register: dest_path_stat
+
     - name: "Create airflow directory architecture"
       ansible.builtin.file:
         path: "{{ dest_path }}"
@@ -18,6 +23,7 @@
         owner: "{{ airflow_uid }}"
         group: "0" # root group
         mode: '0775'
+      when: not dest_path_stat.stat.exists  # 디렉토리가 존재하지 않을 때만 실행
 
     - name: "Airflow directory subdirectories (dags, logs, plugins)"
       ansible.builtin.file:
