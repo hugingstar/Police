@@ -8,6 +8,7 @@ data:
     server {
         listen 80;
         listen 443 ssl;
+        return 301 https://$host$request_uri;
         server_name kojel.com www.kojel.com;
         charset utf-8;
         ssl_certificate /etc/nginx/ssl/tls.crt;
