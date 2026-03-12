@@ -9,7 +9,7 @@ data:
         listen 80;
         listen 443 ssl;
         server_name kojel.com www.kojel.com;
-
+        charset utf-8;
         ssl_certificate /etc/nginx/ssl/tls.crt;
         ssl_certificate_key /etc/nginx/ssl/tls.key;
 
@@ -100,8 +100,13 @@ spec:
   selector:
     app: web-service
   ports:
-    - protocol: TCP
+    - name: http
+      protocol: TCP
       port: 80
       targetPort: 80
+    - name: https
+      protocol: TCP
+      port: 443
+      targetport: 443
 
 
