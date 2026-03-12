@@ -7,7 +7,12 @@ data:
   default.conf: |
     server {
         listen 80;
+        listen 443 ssl;
         server_name kojel.com www.kojel.com;
+
+        ssl_certificate /etc/nginx/ssl/tls.crt;
+        ssl_certificate_key /etc/nginx/ssl/tls.key;
+
         location / {
             root /usr/share/nginx/html;
             index index.html;
@@ -50,6 +55,7 @@ spec:
         image: nginx:latest
         ports:
         - containerPort: 80
+        - containerPort: 443
         volumeMounts:
         - name: config-volume
           mountPath: /etc/nginx/conf.d/default.conf
@@ -57,6 +63,9 @@ spec:
         - name: config-volume
           mountPath: /usr/share/nginx/html/index.html
           subPath: index.html
+        - name: ssl-certs
+          mountPath: "/etc/nginx/ssl"
+          readOnly: true
       - name: fastapi
         image: python:3.9-slim
         command: ["/bin/sh", "-c"]
@@ -75,6 +84,9 @@ spec:
       - name: config-volume
         configMap:
           name: nginx-config
+      - name: ssl-certs
+        secret:
+          secretName: kojel-tls-secret
 ---
 apiVersion: v1
 kind: Service
@@ -84,7 +96,7 @@ metadata:
   annotations:
     metallb.io/loadBalancerIPs: 10.22.0.10
 spec:
-  type: LoadBlancer
+  type: LoadBalancer
   selector:
     app: web-service
   ports:
