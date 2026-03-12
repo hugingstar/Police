@@ -6,17 +6,17 @@ class mapped():
         df_stock = pd.read_csv(path, encoding="utf-8-sig")
         print(df_stock)
         # 
-        if "Symbol" in df_stock.columns:
-            df_stock['Code'] = df_stock['Symbol'].astype(str)
-            df_stock['Name'] = df_stock['Name'].astype(str)
+        if "symbol" in df_stock.columns:
+            df_stock['code'] = df_stock['symbol'].astype(str)
+            df_stock['name'] = df_stock['name'].astype(str)
 
         else:
-            df_stock['Code'] = df_stock['Code'].astype(str)
-            df_stock['Name'] = df_stock['Name'].astype(str)
+            df_stock['code'] = df_stock['code'].astype(str)
+            df_stock['name'] = df_stock['name'].astype(str)
         
         
         # Mapping
-        df_map = df_stock.set_index('Name')['Code']
+        df_map = df_stock.set_index('name')['code']
         
         #Dict    
         self.stock_map = df_map.to_dict()

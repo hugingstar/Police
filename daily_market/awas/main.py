@@ -17,13 +17,13 @@ st.set_page_config(layout="wide", page_title="GGeolmu Bird")
 
 STOCK_LIST_ROOT = "/root/Police/postgres_server/market"
 
-mmp_kospi = stock_mapping.mapped(path="{STOCK_LIST_ROOT}/kospi/stock_list.csv")
+mmp_kospi = stock_mapping.mapped(path=f"{STOCK_LIST_ROOT}/kospi/stock_list.csv")
 stock_map_kospi = dict(mmp_kospi.output())
 
-mmp_kosdaq = stock_mapping.mapped(path="{STOCK_LIST_ROOT}/kosdaq/stock_list.csv")
+mmp_kosdaq = stock_mapping.mapped(path=f"{STOCK_LIST_ROOT}/kosdaq/stock_list.csv")
 stock_map_kosdaq = dict(mmp_kosdaq.output())
 
-mmp_nasdaq = stock_mapping.mapped(path="{STOCK_LIST_ROOT}/nasdaq/stock_list.csv")
+mmp_nasdaq = stock_mapping.mapped(path=f"{STOCK_LIST_ROOT}/nasdaq/stock_list.csv")
 stock_map_nasdaq = dict(mmp_nasdaq.output())
 
 mmp_nyse = stock_mapping.mapped(path="{STOCK_LIST_ROOT}/nyse/stock_list.csv")
