@@ -1,6 +1,6 @@
 ---
 - name: 대상 디렉토리 권한 설정 (775)
-  hosts: all
+  hosts: airflow
   become: yes  # root 권한으로 실행 (필수)
   
   vars:
@@ -17,4 +17,5 @@
         path: "{{ item }}"
         state: directory
         mode: '0775'
+        recurse: yes
       loop: "{{ target_directories }}"
