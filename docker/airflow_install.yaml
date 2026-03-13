@@ -84,45 +84,48 @@
       ansible.builtin.blockinfile:
         path: "{{ dest_path }}/docker-compose.yaml"
         marker: "# {mark} ANSIBLE MANAGED MONITORING SERVICES"
-        insertafter: '^services:'  # Regular expression
+        insertafter: 'services:'
         block: |
-            node-exporter:
-              image: prom/node-exporter:latest
-              container_name: node-exporter
-              restart: always
-              volumes:
-                - /proc:/host/proc:ro
-                - /sys:/host/sys:ro
-                - /:/rootfs:ro
-              command:
-                - '--path.procfs=/host/proc'
-                - '--path.rootfs=/rootfs'
-                - '--path.sysfs=/host/sys'
-                - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
-              networks:
-                - default
+          # Node Exporter: 시스템(CPU, RAM, Disk) 메트릭 수집
+          node-exporter:
+            image: prom/node-exporter:latest
+            container_name: node-exporter
+            restart: always
+            volumes:
+              - /proc:/host/proc:ro
+              - /sys:/host/sys:ro
+              - /:/rootfs:ro
+            command:
+              - '--path.procfs=/host/proc'
+              - '--path.rootfs=/rootfs'
+              - '--path.sysfs=/host/sys'
+              - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+            networks:
+              - default
 
-            prometheus:
-              image: prom/prometheus:latest
-              container_name: prometheus
-              restart: always
-              volumes:
-                - {{ monitoring_conf_path }}/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
-              ports:
-                - "9090:9090"
-              networks:
-                - default
+          # Prometheus: 데이터 수집 및 저장
+          prometheus:
+            image: prom/prometheus:latest
+            container_name: prometheus
+            restart: always
+            volumes:
+              - {{ monitoring_conf_path }}/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+            ports:
+              - "9090:9090"
+            networks:
+              - default
 
-            grafana:
-              image: grafana/grafana:latest
-              container_name: grafana
-              restart: always
-              ports:
-                - "3000:3000"
-              environment:
-                - GF_SECURITY_ADMIN_PASSWORD=admin
-              networks:
-                - default
+          # Grafana: 시각화 도구
+          grafana:
+            image: grafana/grafana:latest
+            container_name: grafana
+            restart: always
+            ports:
+              - "3000:3000"
+            environment:
+              - GF_SECURITY_ADMIN_PASSWORD=admin
+            networks:
+              - default
     
     - name: "Change LOAD_EXAMPLES to False in docker-compose.yaml"
       ansible.builtin.replace:
