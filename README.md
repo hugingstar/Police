@@ -165,7 +165,7 @@ BRANCH_NAME="yslee"
 TARGET_DIR="Police"
 PLAYBOOK_PATH="/root/Police/ans_airflow_grafana_build.yaml"
 
-echo "=== 작업 시작: Git Clone 및 Ansible 실행 ==="
+echo "=== 작업 시작: Git Clone, Ansible 실행 및 Docker 상태 확인 ==="
 
 # 2. 동일한 이름의 디렉토리가 있는지 확인
 if [ -d "$TARGET_DIR" ]; then
@@ -196,11 +196,26 @@ ansible-playbook $PLAYBOOK_PATH -k
 
 # 6. Ansible 실행 결과 확인
 if [ $? -eq 0 ]; then
-    echo "=== 모든 작업이 성공적으로 완료되었습니다. ==="
+    echo "성공: Ansible Playbook 실행이 완료되었습니다."
 else
     echo "실패: Ansible Playbook 실행 중 오류가 발생했습니다."
     exit 1
 fi
+
+# 7. Docker 상태 확인 (추가된 부분)
+echo "------------------------------------------------"
+echo "최종 Docker 리소스 상태를 확인합니다."
+echo "------------------------------------------------"
+
+echo "[Docker 컨테이너 목록 (docker ps -a)]"
+docker ps -a
+
+echo ""
+echo "[Docker 네트워크 목록 (docker network ls)]"
+docker network ls
+
+echo "------------------------------------------------"
+echo "=== 모든 작업이 종료되었습니다. ==="
 ```
 
 ```
