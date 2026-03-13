@@ -272,14 +272,14 @@ dnf install -y nfs-utils
 # 형식: "경로|옵션"
 # 나중에 특정 경로의 IP나 권한만 바꾸고 싶다면 이 리스트에서 해당 줄만 수정하세요.
 CONFIGS=(
-    "/root/Data/KOSPI/A1Sheet|10.15.0.170(rw,sync,no_root_squash)"
-    "/root/Data/KOSPI/B1Sheet|10.15.0.170(rw,sync,no_root_squash)"
-    "/root/Data/KOSDAQ/A1Sheet|10.15.0.170(rw,sync,no_root_squash)"
-    "/root/Data/KOSDAQ/B1Sheet|10.15.0.170(rw,sync,no_root_squash)"
-    "/root/Data/NASDAQ/A1Sheet|10.15.0.170(rw,sync,no_root_squash)"
-    "/root/Data/NASDAQ/B1Sheet|10.15.0.170(rw,sync,no_root_squash)"
-    "/root/Data/NYSE/A1Sheet|10.15.0.170(rw,sync,no_root_squash)"
-    "/root/Data/NYSE/B1Sheet|10.15.0.170(rw,sync,no_root_squash)"
+    "/root/Data/KOSPI/A1Sheet|10.15.0.150(rw,sync,no_root_squash)"
+    "/root/Data/KOSPI/B1Sheet|10.15.0.150(rw,sync,no_root_squash)"
+    "/root/Data/KOSDAQ/A1Sheet|10.15.0.150(rw,sync,no_root_squash)"
+    "/root/Data/KOSDAQ/B1Sheet|10.15.0.150(rw,sync,no_root_squash)"
+    "/root/Data/NASDAQ/A1Sheet|10.15.0.150(rw,sync,no_root_squash)"
+    "/root/Data/NASDAQ/B1Sheet|10.15.0.150(rw,sync,no_root_squash)"
+    "/root/Data/NYSE/A1Sheet|10.15.0.150(rw,sync,no_root_squash)"
+    "/root/Data/NYSE/B1Sheet|10.15.0.150(rw,sync,no_root_squash)"
 )
 
 echo "디렉토리 생성 및 /etc/exports 설정을 시작합니다..."
@@ -327,7 +327,7 @@ chmod +x push_to_nfs_node.sh
 ./push_to_nfs_node.sh
 ```
 
-- NFS Client 측(10.15.0.170)에서 설정하는 방법
+- NFS Client 측(10.15.0.150)에서 설정하는 방법
 
 ```
 # 파일 생성
