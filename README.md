@@ -380,7 +380,7 @@ vi clean_up.sh
 #!/bin/bash
 
 # /root 디렉토리로 이동
-cd /root || exit
+cd /root || { echo "디렉토리 이동 실패"; exit 1; }
 
 echo "--- 특정 서비스 및 네트워크 정리 작업을 시작합니다 ---"
 
@@ -400,7 +400,7 @@ else
     echo "[Skip] /root/Cronjob 디렉토리가 존재하지 않습니다."
 fi
 
-# (3) 지정된 특정 네트워크만 삭제 (추가됨)
+# (3) 지정된 특정 네트워크만 삭제
 echo "[Step 3] 트레이딩 관련 특정 네트워크 제거 중..."
 networks=(
     "trade_kospi_network"
@@ -421,7 +421,17 @@ done
 echo "[Step 4] 잔여 디렉토리(Cronjob, Data, Police) 삭제 중..."
 rm -rf Cronjob Data Police
 
-echo "--- 모든 작업이 완료되었습니다 ---"
+echo "--- 모든 정리 작업이 완료되었습니다 ---"
+echo ""
+
+# (5) 결과 확인 (요청 사항)
+echo "[Step 5] 현재 실행 중인 컨테이너 및 네트워크 상태 확인"
+echo ">> Docker 컨테이너 목록 (docker ps -a):"
+docker ps -a
+
+echo ""
+echo ">> Docker 네트워크 목록 (docker network ls):"
+docker network ls
 ```
 
 ```
