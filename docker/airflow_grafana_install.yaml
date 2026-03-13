@@ -1,0 +1,157 @@
+---
+- name: Add Prometheus and Grafana Monitoring to Airflow
+  hosts: airflow
+  become: yes
+  vars:
+    dest_path: "/root/Cronjob"
+    airflow_version: "2.10.2"
+    additional_packages: "finance-datareader pandas numpy psycopg2-binary DateTime ta schedule comtypes natsort scipy"
+    market_map_path: "/root/Police/postgres_server/market"
+    result_map_path: "/root/Data"
+    airflow_uid: "50000"
+    monitoring_conf_path: "{{ dest_path }}/monitoring"
+
+  tasks:
+    - name: "Create directory architecture"
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        owner: "{{ airflow_uid }}"
+        group: "0"
+        mode: '0775'
+      with_items:
+        - "{{ dest_path }}"
+        - "{{ dest_path }}/dags"
+        - "{{ dest_path }}/logs"
+        - "{{ dest_path }}/plugins"
+        - "{{ monitoring_conf_path }}/prometheus"
+        - "{{ result_map_path }}"
+        - "{{ market_map_path }}"
+
+    - name: "Get base airflow docker-compose.yaml"
+      ansible.builtin.get_url:
+        url: "https://airflow.apache.org/docs/apache-airflow/{{ airflow_version }}/docker-compose.yaml"
+        dest: "{{ dest_path }}/docker-compose.yaml"
+        mode: '0664'
+
+    - name: "Create Prometheus Configuration"
+      ansible.builtin.copy:
+        dest: "{{ monitoring_conf_path }}/prometheus/prometheus.yml"
+        content: |
+          global:
+            scrape_interval: 15s
+          scrape_configs:
+            - job_name: 'prometheus'
+              static_configs:
+                - targets: ['localhost:9090']
+            - job_name: 'node-exporter'
+              static_configs:
+                - targets: ['node-exporter:9100']
+            - job_name: 'airflow'
+              metrics_path: '/metrics'
+              static_configs:
+                - targets: ['airflow-webserver:8080']
+        mode: '0644'
+
+    - name: "Create docker-compose.override.yaml"
+      ansible.builtin.copy:
+        dest: "{{ dest_path }}/docker-compose.override.yaml"
+        content: |
+          services:
+            # 1. Monitoring Services 추가
+            node-exporter:
+              image: prom/node-exporter:latest
+              container_name: node-exporter
+              restart: always
+              volumes:
+                - /proc:/host/proc:ro
+                - /sys:/host/sys:ro
+                - /:/rootfs:ro
+              command:
+                - '--path.procfs=/host/proc'
+                - '--path.rootfs=/rootfs'
+                - '--path.sysfs=/host/sys'
+              networks:
+                - default
+
+            prometheus:
+              image: prom/prometheus:latest
+              container_name: prometheus
+              restart: always
+              volumes:
+                - {{ monitoring_conf_path }}/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+              ports:
+                - "9090:9090"
+              networks:
+                - default
+
+            grafana:
+              image: grafana/grafana:latest
+              container_name: grafana
+              restart: always
+              ports:
+                - "3000:3000"
+              environment:
+                - GF_SECURITY_ADMIN_PASSWORD=admin
+              networks:
+                - default
+
+            # 2. Airflow 서비스들에 볼륨 및 네트워크 설정 덮어쓰기
+            airflow-common: &airflow-common-override
+              networks:
+                - default
+                - trade_kospi_network
+                - trade_kosdaq_network
+                - trade_nasdaq_network
+                - trade_nyse_network
+              volumes:
+                - ${AIRFLOW_PROJ_DIR:-.}/dags:/opt/airflow/dags
+                - ${AIRFLOW_PROJ_DIR:-.}/logs:/opt/airflow/logs
+                - ${AIRFLOW_PROJ_DIR:-.}/plugins:/opt/airflow/plugins
+                - {{ market_map_path }}:/opt/airflow/data/market
+                - {{ result_map_path }}:/opt/airflow/data/Data
+
+            airflow-webserver:
+              <<: *airflow-common-override
+            airflow-scheduler:
+              <<: *airflow-common-override
+            airflow-worker:
+              <<: *airflow-common-override
+            airflow-triggerer:
+              <<: *airflow-common-override
+            airflow-init:
+              <<: *airflow-common-override
+
+          networks:
+            trade_kospi_network:
+              external: true
+            trade_kosdaq_network:
+              external: true
+            trade_nasdaq_network:
+              external: true
+            trade_nyse_network:
+              external: true
+        mode: '0644'
+
+    - name: "Create .env file"
+      ansible.builtin.copy:
+        dest: "{{ dest_path }}/.env"
+        content: |
+          AIRFLOW_UID={{ airflow_uid }}
+          _PIP_ADDITIONAL_REQUIREMENTS={{ additional_packages }}
+          AIRFLOW__CORE__LOAD_EXAMPLES=False
+          AIRFLOW__CORE__DEFAULT_TIMEZONE=Asia/Seoul
+          AIRFLOW__WEBSERVER__DEFAULT_UI_TIMEZONE=Asia/Seoul
+          AIRFLOW__CORE__EXPOSE_CONFIG=True
+          AIRFLOW__METRICS__PROMETHEUS_METRICS_ENABLED=True
+        mode: '0644'
+
+    - name: "Initialize Airflow Database"
+      ansible.builtin.shell:
+        cmd: "docker compose up airflow-init"
+        chdir: "{{ dest_path }}"
+
+    - name: "Start Airflow and Monitoring Services"
+      ansible.builtin.shell:
+        cmd: "docker compose up -d"
+        chdir: "{{ dest_path }}"

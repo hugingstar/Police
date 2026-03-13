@@ -1,5 +1,5 @@
 ---
-- name: Add Prometheus and Grafana Monitoring to Airflow
+- name: Airflow installation
   hosts: airflow
   become: yes
   vars:
@@ -9,8 +9,6 @@
     market_map_path: "/root/Police/postgres_server/market"
     result_map_path: "/root/Data"
     airflow_uid: "50000"
-    # 모니터링 주소
-    monitoring_conf_path: "{{ dest_path }}/monitoring"
     
   tasks:
     - name: "Check if {{ dest_path }} exists"
@@ -27,20 +25,17 @@
         mode: '0775'
       when: not dest_path_stat.stat.exists  # 디렉토리가 존재하지 않을 때만 실행
 
-    - name: "Create airflow and monitoring directory architecture"
+    - name: "Airflow directory subdirectories (dags, logs, plugins)"
       ansible.builtin.file:
-        path: "{{ item }}"
+        path: "{{ dest_path }}/{{ item }}"
         state: directory
         owner: "{{ airflow_uid }}"
         group: "0"
         mode: '0775'
       with_items:
-        - "{{ dest_path }}"
-        - "{{ dest_path }}/dags"
-        - "{{ dest_path }}/logs"
-        - "{{ dest_path }}/plugins"
-        - "{{ monitoring_conf_path }}"
-        - "{{ monitoring_conf_path }}/prometheus"
+        - 'dags'
+        - 'logs'
+        - 'plugins'
     
     - name: "Create result and market data directories with correct permissions"
       ansible.builtin.file:
@@ -60,72 +55,6 @@
         dest: "{{ dest_path }}/docker-compose.yaml"
         mode: '0664'
         force: no
-
-    - name: "Create Prometheus Configuration"
-      ansible.builtin.copy:
-        dest: "{{ monitoring_conf_path }}/prometheus/prometheus.yml"
-        content: |
-          global:
-            scrape_interval: 15s
-          scrape_configs:
-            - job_name: 'prometheus'
-              static_configs:
-                - targets: ['localhost:9090']
-            - job_name: 'node-exporter'
-              static_configs:
-                - targets: ['node-exporter:9100']
-            - job_name: 'airflow'
-              metrics_path: '/metrics'
-              static_configs:
-                - targets: ['airflow-webserver:8080']
-        mode: '0644'
-    
-    - name: "Add Monitoring Services to docker-compose.yaml"
-      ansible.builtin.blockinfile:
-        path: "{{ dest_path }}/docker-compose.yaml"
-        marker: "# {mark} ANSIBLE MANAGED MONITORING SERVICES"
-        insertafter: 'services:'
-        block: |
-          # Node Exporter: 시스템(CPU, RAM, Disk) 메트릭 수집
-          node-exporter:
-            image: prom/node-exporter:latest
-            container_name: node-exporter
-            restart: always
-            volumes:
-              - /proc:/host/proc:ro
-              - /sys:/host/sys:ro
-              - /:/rootfs:ro
-            command:
-              - '--path.procfs=/host/proc'
-              - '--path.rootfs=/rootfs'
-              - '--path.sysfs=/host/sys'
-              - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
-            networks:
-              - default
-
-          # Prometheus: 데이터 수집 및 저장
-          prometheus:
-            image: prom/prometheus:latest
-            container_name: prometheus
-            restart: always
-            volumes:
-              - {{ monitoring_conf_path }}/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
-            ports:
-              - "9090:9090"
-            networks:
-              - default
-
-          # Grafana: 시각화 도구
-          grafana:
-            image: grafana/grafana:latest
-            container_name: grafana
-            restart: always
-            ports:
-              - "3000:3000"
-            environment:
-              - GF_SECURITY_ADMIN_PASSWORD=admin
-            networks:
-              - default
     
     - name: "Change LOAD_EXAMPLES to False in docker-compose.yaml"
       ansible.builtin.replace:
@@ -182,8 +111,7 @@
           AIRFLOW__CORE__DEFAULT_TIMEZONE=Asia/Seoul
           AIRFLOW__WEBSERVER__DEFAULT_UI_TIMEZONE=Asia/Seoul
           AIRFLOW__CORE__EXPOSE_CONFIG=True
-          AIRFLOW__METRICS__EXPOSE_CONFIG=True
-          AIRFLOW__METRICS__PROMETHEUS_METRICS_ENABLED=True
+          AIRFLOW__RECEPTACLE__ENABLE_METRICS=True
         mode: '0644'
     
     - name: "Initialize Airflow Database"
