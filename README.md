@@ -157,12 +157,15 @@ cd ~
 vi clone_police.sh
 
 # 작성한 내용
+#!/bin/bash
+
 # 1. 변수 설정
 REPO_URL="https://github.com/hugingstar/Police.git"
 BRANCH_NAME="yslee"
 TARGET_DIR="Police"
+PLAYBOOK_PATH="/root/Police/ans_airflow_grafana_build.yaml"
 
-echo "=== Git Clone 작업 시작: 브랜치 [$BRANCH_NAME] ==="
+echo "=== 작업 시작: Git Clone 및 Ansible 실행 ==="
 
 # 2. 동일한 이름의 디렉토리가 있는지 확인
 if [ -d "$TARGET_DIR" ]; then
@@ -171,15 +174,31 @@ if [ -d "$TARGET_DIR" ]; then
 fi
 
 # 3. git clone 실행
-# -b: 특정 브랜치 지정
-# --single-branch: 해당 브랜치의 이력만 가져옴
+# -b: 특정 브랜치 지정 / --single-branch: 해당 브랜치의 이력만 가져옴
 git clone -b $BRANCH_NAME --single-branch $REPO_URL
 
-# 4. 결과 확인
+# 4. Clone 결과 확인
 if [ $? -eq 0 ]; then
     echo "성공: [$BRANCH_NAME] 브랜치를 성공적으로 복사했습니다."
 else
     echo "실패: Git 클론 도중 문제가 발생했습니다."
+    exit 1
+fi
+
+# 5. Ansible Playbook 실행
+# -k 옵션은 SSH password 입력을 요구하므로 프롬프트가 뜰 때 비밀번호를 입력해야 합니다.
+echo "------------------------------------------------"
+echo "Ansible Playbook 실행을 시작합니다."
+echo "SSH 연결을 위한 비밀번호를 입력해주세요 (-k 옵션)."
+echo "------------------------------------------------"
+
+ansible-playbook $PLAYBOOK_PATH -k
+
+# 6. Ansible 실행 결과 확인
+if [ $? -eq 0 ]; then
+    echo "=== 모든 작업이 성공적으로 완료되었습니다. ==="
+else
+    echo "실패: Ansible Playbook 실행 중 오류가 발생했습니다."
     exit 1
 fi
 ```
@@ -348,12 +367,12 @@ vi clean_up.sh
 # /root 디렉토리로 이동
 cd /root || exit
 
-echo "--- 서버 정리 작업을 시작합니다 ---"
+echo "--- 특정 서비스 및 네트워크 정리 작업을 시작합니다 ---"
 
 # (1) /root/Police/postgres_server 에서 docker compose down -v 실행
 if [ -d "/root/Police/postgres_server" ]; then
     echo "[Step 1] Police PostgreSQL 서버 중지 및 볼륨 삭제 중..."
-    cd /root/Police/postgres_server && docker compose down -v
+    (cd /root/Police/postgres_server && docker compose down -v)
 else
     echo "[Skip] /root/Police/postgres_server 디렉토리가 존재하지 않습니다."
 fi
@@ -361,14 +380,30 @@ fi
 # (2) /root/Cronjob 에서 docker-compose.yaml 및 override 파일 적용하여 down -v 실행
 if [ -d "/root/Cronjob" ]; then
     echo "[Step 2] Cronjob 서비스 중지 및 볼륨 삭제 중..."
-    cd /root/Cronjob && docker compose -f docker-compose.yaml -f docker-compose.override.yaml down -v
+    (cd /root/Cronjob && docker compose -f docker-compose.yaml -f docker-compose.override.yaml down -v)
 else
     echo "[Skip] /root/Cronjob 디렉토리가 존재하지 않습니다."
 fi
 
-# (3) 잔여 파일 및 디렉토리 삭제 (Cronjob, Data, Police)
-echo "[Step 3] 잔여 디렉토리(Cronjob, Data, Police) 삭제 중..."
-cd /root
+# (3) 지정된 특정 네트워크만 삭제 (추가됨)
+echo "[Step 3] 트레이딩 관련 특정 네트워크 제거 중..."
+networks=(
+    "trade_kospi_network"
+    "trade_kosdaq_network"
+    "trade_nasdaq_network"
+    "trade_nyse_network"
+)
+
+for net in "${networks[@]}"; do
+    if [ "$(docker network ls -q -f name=^${net}$)" ]; then
+        docker network rm "$net" && echo "  - $net 삭제 완료"
+    else
+        echo "  - $net (존재하지 않음)"
+    fi
+done
+
+# (4) 잔여 파일 및 디렉토리 삭제 (Cronjob, Data, Police)
+echo "[Step 4] 잔여 디렉토리(Cronjob, Data, Police) 삭제 중..."
 rm -rf Cronjob Data Police
 
 echo "--- 모든 작업이 완료되었습니다 ---"
