@@ -53,11 +53,3 @@ docker ps -a
 echo ""
 echo ">> Docker 네트워크 목록 (docker network ls):"
 docker network ls
-```
-
-```
-# 실행권한
-chmod +x clean_up.sh
-
-# 설치(Ansible, Git)
-sudo ./clean_up.sh
