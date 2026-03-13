@@ -332,3 +332,54 @@ echo "------------------------------------------------------"
 # 6. 디스크 상태 확인
 df -h | grep "10.17.0.2"
 ```
+
+
+# 5. 서비스 종료 및 삭제
+
+- 작업했던 프로젝트 폴더 파일들(DB/Airflow/Grafana/Data 등)을 삭제한다.
+
+```
+# 파일 생성
+vi clean_up.sh
+
+# 작성한 내용
+#!/bin/bash
+
+# /root 디렉토리로 이동
+cd /root || exit
+
+echo "--- 서버 정리 작업을 시작합니다 ---"
+
+# (1) /root/Police/postgres_server 에서 docker compose down -v 실행
+if [ -d "/root/Police/postgres_server" ]; then
+    echo "[Step 1] Police PostgreSQL 서버 중지 및 볼륨 삭제 중..."
+    cd /root/Police/postgres_server && docker compose down -v
+else
+    echo "[Skip] /root/Police/postgres_server 디렉토리가 존재하지 않습니다."
+fi
+
+# (2) /root/Cronjob 에서 docker-compose.yaml 및 override 파일 적용하여 down -v 실행
+if [ -d "/root/Cronjob" ]; then
+    echo "[Step 2] Cronjob 서비스 중지 및 볼륨 삭제 중..."
+    cd /root/Cronjob && docker compose -f docker-compose.yaml -f docker-compose.override.yaml down -v
+else
+    echo "[Skip] /root/Cronjob 디렉토리가 존재하지 않습니다."
+fi
+
+# (3) 잔여 파일 및 디렉토리 삭제 (Cronjob, Data, Police)
+echo "[Step 3] 잔여 디렉토리(Cronjob, Data, Police) 삭제 중..."
+cd /root
+rm -rf Cronjob Data Police
+
+echo "--- 모든 작업이 완료되었습니다 ---"
+```
+
+```
+# 실행권한
+chmod +x clean_up.sh
+
+# 설치(Ansible, Git)
+sudo ./clean_up.sh
+```
+
+![alt text](image.png)
