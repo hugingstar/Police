@@ -442,4 +442,23 @@ chmod +x clean_up.sh
 sudo ./clean_up.sh
 ```
 
+# 6. 서비스 종료 및 삭제
+
+- 완전 자동화된 패키지 설치/서비스와 인프라 빌드/서비스와 인프라 삭제/NFS node로 결과 배포
+- 단, ansible 설치 후 `/etc/ansible/hosts`, nfs_node 주소 등록은 직접하셔야합니다.
+
+```
+
+curl -sSL https://raw.githubusercontent.com/hugingstar/Police/refs/heads/yslee/install_ansible.sh | bash
+
+# 클론 부터 설치 서비스 시작까지 자동화
+curl -sSL https://raw.githubusercontent.com/hugingstar/Police/refs/heads/yslee/clone_police.sh | bash
+
+# 분석 결과의 배포 자동화
+curl -sSL https://raw.githubusercontent.com/hugingstar/Police/refs/heads/yslee/push_to_nfs_node.sh | bash
+
+# 서비스 완전 삭제(회수)
+curl -sSL https://raw.githubusercontent.com/hugingstar/Police/refs/heads/yslee/clean_up.sh | bash
+```
+
 ![alt text](image.png)
