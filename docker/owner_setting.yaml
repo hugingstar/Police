@@ -1,0 +1,20 @@
+---
+- name: 대상 디렉토리 권한 설정 (775)
+  hosts: all
+  become: yes  # root 권한으로 실행 (필수)
+  
+  vars:
+    target_directories:
+      - /root/Data/KOSPI
+      - /root/Data/KOSDAQ
+      - /root/Data/NASDAQ
+      - /root/Data/NYSE
+      - /root/Police
+
+  tasks:
+    - name: 디렉토리 권한을 775로 변경
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: '0775'
+      loop: "{{ target_directories }}"
