@@ -43,6 +43,12 @@
         url: "https://airflow.apache.org/docs/apache-airflow/{{ airflow_version }}/docker-compose.yaml"
         dest: "{{ dest_path }}/docker-compose.yaml"
         mode: '0664'
+    
+    - name: "Change LOAD_EXAMPLES to False in docker-compose.yaml"
+      ansible.builtin.replace:
+        path: "{{ dest_path }}/docker-compose.yaml"
+        regexp: "AIRFLOW__CORE__LOAD_EXAMPLES: 'true'"
+        replace: "AIRFLOW__CORE__LOAD_EXAMPLES: 'false'"
 
     - name: "Create Prometheus Configuration"
       ansible.builtin.copy:
