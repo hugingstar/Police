@@ -1,3 +1,0 @@
----
-- import_playbook: web.yaml
-- import_playbook: metallb.yaml
