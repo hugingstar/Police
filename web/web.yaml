@@ -35,12 +35,11 @@ spec:
           readOnly: true
       - name: was
         image: python:3.9-slim
-        workingDir: /app
+        workingDir: /usr/share/nginx/html
         command: ["/bin/sh", "-c"]
         args:
           - |
             pip install fastapi uvicorn pandas Jinja2 pymysql mailbox
-            cd /usr/share/nginx/html
             # main.py가 마운트된 경로에서 WAS 실행
             python3 main.py
         volumeMounts:
@@ -53,15 +52,15 @@ spec:
       - name: proxy-vol
         hostPath:
           path: /root/jjh/Police/web/default.conf
-          type: File
+          type: FileOrCreate
       - name: static-vol
         hostPath:
           path: /root/yslee/Police/web_interface/templates
-          type: Directory
+          type: DirectoryOrCreate
       - name: was-vol
         hostPath:
           path: /root/yslee/Police/web_interface
-          type: Directory 
+          type: DirectoryOrCreate
       - name: ssl-certs
         secret:
           secretName: kojel-tls-secret
