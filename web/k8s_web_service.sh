@@ -36,4 +36,4 @@ echo "------------------------------------"
 echo "All deployments are completed successfully."
 
 # 현재 배포된 Pod 및 Service 상태 확인
-kubectl get pods,svc
+kubectl get pods,svc,deploy -n web
