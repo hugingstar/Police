@@ -38,29 +38,7 @@ chmod +x ssl_secret.sh
 
 ```
 # 작업 위치에서 default.conf 생성하고 아래의 내용 작성
-server {
-    listen 80;
-    server_name kojel.com www.kojel.com;
-    return 301 https://$host$request_uri;
-}
 
-server {
-    listen 443 ssl;
-    server_name kojel.com www.kojel.com;
-    charset utf-8;
-
-    ssl_certificate /etc/nginx/ssl/tls.crt;
-    ssl_certificate_key /etc/nginx/ssl/tls.key;
-
-    location / {
-        root /usr/share/nginx/html;
-        index login.html;
-    }
-
-    location /api {
-        proxy_pass http://localhost:8000/;
-    }
-}
 ```
 
 ## k8s web deployment, service, metallb 생성 및 배포
@@ -81,4 +59,5 @@ chmod +x k8s_web_down.sh
 
 # sh 파일만 권한 주기
 find . -name "*.sh" -exec chmod +x {} +
+find . -name "*.py" -exec chmod +x {} +
 ```
