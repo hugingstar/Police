@@ -11,7 +11,7 @@ spec:
       app: web-service
   template:
     metadata:
-      lables:
+      labels:
         app: web-service
     spec:
       dnsPolicy: "None"

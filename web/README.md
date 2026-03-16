@@ -1,5 +1,22 @@
 # Web server service 설정 방법 
 
+## girhub clone
+
+
+```
+# 웹서버 관련
+mkdir jjh
+cd /root/jjh
+git clone -b jjh --single-branch https://github.com/hugingstar/Police.git
+
+# WAS 관련
+mkdir yslee
+cd /root/yslee
+git clone -b yslee --single-branch https://github.com/hugingstar/Police.git
+
+```
+
+
 ## SSL-Secret 실행 
 - ssl 인증서 생성 및 Secret 생성
 
@@ -50,9 +67,10 @@ server {
 
 ## k8s web deployment, service, metallb 생성 및 배포
 
-- 
+- Service, metallb를 위한 경로로 들어가서 shell scripts를 시작
 
 ```
 # 서비스 실행 자동
+cd /root/jjh/Police/web
 ./k8s_web_service.sh
 ```
