@@ -33,21 +33,21 @@ spec:
         - name: ssl-certs
           mountPath: "/etc/nginx/ssl"
           readOnly: true
-        - name: was
-          image: python:3.9-slim
-          workingDir: /app
-          command: ["/bin/sh", "-c"]
-          args:
-            - |
-              pip install fastapi uvicorn pandas Jinja2 pymysql mailbox
-              cd /usr/share/nginx/html
-              # main.py가 마운트된 경로에서 WAS 실행
-              python3 main.py
-          volumeMounts:
-          - name: was-vol
-            mountPath: /usr/share/nginx/html
-          - name: static-vol
-            mountPath: /usr/share/nginx/html/templates
+      - name: was
+        image: python:3.9-slim
+        workingDir: /app
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            pip install fastapi uvicorn pandas Jinja2 pymysql mailbox
+            cd /usr/share/nginx/html
+            # main.py가 마운트된 경로에서 WAS 실행
+            python3 main.py
+        volumeMounts:
+        - name: was-vol
+          mountPath: /usr/share/nginx/html
+        - name: static-vol
+          mountPath: /usr/share/nginx/html/templates
         
       volumes:
       - name: proxy-vol

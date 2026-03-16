@@ -13,9 +13,7 @@ git clone -b jjh --single-branch https://github.com/hugingstar/Police.git
 mkdir yslee
 cd /root/yslee
 git clone -b yslee --single-branch https://github.com/hugingstar/Police.git
-
 ```
-
 
 ## SSL-Secret 실행 
 - ssl 인증서 생성 및 Secret 생성
@@ -72,5 +70,9 @@ server {
 ```
 # 서비스 실행 자동
 cd /root/jjh/Police/web
+
+# 권한 부여
+chmod +x k8s_web_service.sh
+
 ./k8s_web_service.sh
 ```
