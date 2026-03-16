@@ -1,4 +1,4 @@
-#web pod 
+# web pod 
 
 web.yaml *namespace-web으로 설정 
 - ConfigMap
