@@ -1,0 +1,18 @@
+- name: Join Worker Nodes to Kubernetes Cluster
+  hosts: worker_nodes
+  become: true
+  tasks:
+    - name: Reset kubeadm if already joined
+      ansible.builtin.command: kubeadm reset -f
+      ignore_errors: true
+
+    - name: Join the node to the cluster
+      ansible.builtin.script: ../scripts/join_command.sh
+      register: join_result
+      failed_when:
+        - join_result.rc != 0 
+        - '"already exists" not in join_result.stderr'
+    
+    - name: Show join join_result
+      ansible.builtin.debug:
+        msg: "{{ join_result.stdout_lines }}"

@@ -1,0 +1,50 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: custom-rules
+  namespace: monitoring
+  labels:
+    release: prometheus # 현재 사용 중인 Helm Release 라벨과 일치해야 함
+spec:
+  groups:
+  - name: infrastructure-alerts
+    rules:
+    # 1. NFS Server Down (External Node)
+    - alert: NFSServerDown
+      expr: up{instance="NFS-Storage-Server"} == 0
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Instance Down: NFS Server"
+        description: "The node_exporter on NFS Server (10.15.0.170) has been offline for more than 1 minute."
+
+    # 2. NFS Server Disk Space Low
+    - alert: NFSServerDiskFull
+      expr: (node_filesystem_avail_bytes{instance="NFS-Storage-Server", mountpoint="/root/nfs_node"} / node_filesystem_size_bytes{instance="NFS-Storage-Server", mountpoint="/root/nfs_node"}) * 100 < 10
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Low Disk Space: NFS Server"
+        description: "NFS Server root partition is running low on disk space (less than 10% remaining). Current usage: {{ $value | printf \"%.2f\" }}%."
+
+    # 3. Pod CrashLoopBackOff (K8s Resource)
+    - alert: PodCrashLooping
+      expr: rate(kube_pod_container_status_restarts_total[5m]) > 0
+      for: 2m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Pod Restarting: {{ $labels.pod }}"
+        description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} is restarting frequently."
+
+    # 4. High Memory Usage (Warning Level)
+    - alert: HostHighMemoryUsage
+      expr: (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * 100 < 10
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High Memory Usage: {{ $labels.instance }}"
+        description: "Less than 10% of memory is available on {{ $labels.instance }}."

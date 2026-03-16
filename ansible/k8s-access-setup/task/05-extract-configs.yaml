@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Config
+clusters:
+- cluster:
+    certificate-authority-data: ${CA_DATA}
+    server: https://10.5.0.200:6443 
+  name: kubernetes
+contexts:
+- context:
+    cluster: kubernetes
+    user: user-xxx
+    namespace: default
+  name: user-xxx-context
+current-context: user-xxx-context
+users:
+- name: user-xxx
+  user:
+    token: ${USER_TOKEN}

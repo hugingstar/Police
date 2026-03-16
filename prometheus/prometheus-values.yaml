@@ -1,0 +1,87 @@
+# Set NodePort
+grafana:  
+  persistence:
+    enabled: true
+  service:
+    type: NodePort
+    nodePort: 30001
+
+prometheus:
+  service:
+    type: NodePort
+    nodePort: 30090
+  prometheusSpec:
+    additionalScrapeConfigs: |
+      - job_name: 'external-node-exporter'
+        file_sd_configs:
+          - files: 
+            - '/etcprometheus/export-node-targets/*.json'
+            refresh_interval: 1m 
+    alertingEndpoints:
+      - name: prometheus-kube-prometheus-alertmanager
+        namespace: monitoring
+        port: 9093
+    volumes:
+      - name: exporter-targets
+        persistentVolumeClaim:
+          claimName: nfs-pvc-monitoring
+    volumeMounts:
+      - name: exporter-targets
+        mountPath: /etc/prometheus/export-node-targets
+
+alertmanager:
+  enabled: true
+  service:
+    type: NodePort
+    nodePort: 30093
+  config:
+    global:
+      resolve_timeout: 5m
+      slack_api_url: # Your Slack Web hook URL 
+
+    route:
+      group_by: ['alertname', 'namespace']
+      group_wait: 5s
+      group_interval: 1m
+      repeat_interval: 1m
+      receiver: 'null'
+      routes:
+      - receiver: 'null'
+        matchers:
+        - alertname=~"Watchdog|InfoAlert"
+        - severity=~"none|info"
+
+      - receiver: 'slack-notifications'
+        matchers:
+        - severity=~"warning|critical"
+
+    receivers:
+    - name: 'null'
+    - name: 'slack-notifications'
+      slack_configs:
+      - channel: '#k8s-alert'
+        send_resolved: true
+
+        color: '{{ if eq .Status "firing" }}danger{{ else }}good{{ end }}'
+
+        title: >-
+          [{{ .Status | toUpper }}{{ if eq .Status "firing" }}::rotating_light:{{ else }}::white_check_mark:{{ end }}]
+          [{{ .CommonLabels.severity | toUpper }}] {{ .CommonLabels.alertname }}
+        text: |
+          {{ range .Alerts }}
+          *Alert:* `{{ .Labels.alertname }}`
+          {{ if .Annotations.description }}
+          *Description:* {{ .Annotations.description }}
+          {{ else if .Annotations.summary }}
+          *Description:* {{ .Annotations.summary }}
+          {{ else }}
+          *Description:* 상세 설명 없음
+          {{ end }}
+
+          *Details:*
+          {{ if .Labels.namespace }} • *Namespace:* `{{ .Labels.namespace }}` {{ end }}
+          {{ if .Labels.instance }} • *Instance:* `{{ .Labels.instance }}` {{ end }}
+          {{ if .Labels.pod }} • *Pod:* `{{ .Labels.pod }}` {{ end }}
+          {{ if .Labels.container }} • *Container:* `{{ .Labels.container }}` {{ end }}
+          • *Started At:* {{ .StartsAt.Format "2006-01-02 15:04:05" }}
+          {{ end }}

@@ -1,0 +1,38 @@
+- name: Update Prometheus Target JSON on NFS Server
+  hosts: nfs_node
+  become: true
+  vars: 
+    target_file: "/root/nfs_node/monitoring/export-node.json"
+  tasks: 
+
+    - name: Read existing JSON content
+      slurp: 
+        src: "{{ target_file }}"
+      register: nfs_content 
+
+    - name: Initialize target list
+      set_fact: 
+        temp_list: "{{ (nfs_content.content | b64decode | from_json) if (nfs_content.content | b64decode | length > 0) else [] }}"
+
+    - name: Append each node information from inventory
+      set_fact:
+        temp_list: >-
+          {{
+            temp_list +
+            [{
+              "targets": [ hostvars[item].ansible_host | default(item) + ":9100" ],
+              "labels": {
+                "job": hostvars[item].target_job | default('node-exporter'),
+                "instance": hostvars[item].target_instance | default(item)
+              }
+            }]
+          }}
+      loop: "{{ groups['target_nodes'] }}" 
+
+    - name: Write Updated JSON to NFS 
+      copy: 
+        content: "{{ temp_list | to_nice_json }}"
+        dest: "{{ target_file }}"
+        owner: root
+        group: root
+        mode: '0644'
