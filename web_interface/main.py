@@ -54,7 +54,7 @@ MAIL_CONFIG = {
 # Database information
 DB_CONFIG = {
 
-    "host": "127.0.0.1", 
+    "host": "10.15.0.150", 
     "port": 3306, 
     "user": "root", 
     "password": "root", 
