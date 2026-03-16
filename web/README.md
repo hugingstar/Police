@@ -78,4 +78,7 @@ chmod +x k8s_web_down.sh
 # 실행
 ./k8s_web_service.sh
 ./k8s_web_down.sh
+
+# sh 파일만 권한 주기
+find . -name "*.sh" -exec chmod +x {} +
 ```
