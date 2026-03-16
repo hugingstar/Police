@@ -43,7 +43,7 @@ except Exception as e:
 
 # Mail server config
 MAIL_CONFIG = {
-    "MAIL_SERVER_IP" : "192.168.17.5",  # 실제 메일 서버 IP로 변경하세요
+    "MAIL_SERVER_IP" : "10.22.0.2",  # 실제 메일 서버 IP로 변경하세요
     "MAIL_SEND_PORT" : 25,
     "MAIL_RECEIVE_PORT" : 110,
     "MAIL_SERVER_PORT" : 9999,          # 메일 서버 수신 포트
@@ -97,20 +97,20 @@ async def login(user_id: str = Form(...), password: str = Form(...)):
     success, result = db_handler.verify_login(user_id, password)
     
     # # 디버깅시 로그인 비활성화
-    # message = quote(f"{result}님, 환영합니다!")
-    # redirect_response = RedirectResponse(url=f"/users?msg={message}", status_code=303)
-    # redirect_response.set_cookie(key="user_id", value=user_id, httponly=True)
-    # return redirect_response
+    message = quote(f"{result}님, 환영합니다!")
+    redirect_response = RedirectResponse(url=f"/users?msg={message}", status_code=303)
+    redirect_response.set_cookie(key="user_id", value=user_id, httponly=True)
+    return redirect_response
 
-    if success:
-        # result(사용자명)에 한글이 포함될 수 있으므로 quote로 감쌉니다.
-        message = quote(f"{result}님, 환영합니다!")
-        redirect_response = RedirectResponse(url=f"/users?msg={message}", status_code=303)
-        redirect_response.set_cookie(key="user_id", value=user_id, httponly=True)
-        return redirect_response
-    else:
-        error_msg = quote(str(result))
-        return RedirectResponse(url=f"/login?msg={error_msg}", status_code=303)
+    # if success:
+    #     # result(사용자명)에 한글이 포함될 수 있으므로 quote로 감쌉니다.
+    #     message = quote(f"{result}님, 환영합니다!")
+    #     redirect_response = RedirectResponse(url=f"/users?msg={message}", status_code=303)
+    #     redirect_response.set_cookie(key="user_id", value=user_id, httponly=True)
+    #     return redirect_response
+    # else:
+    #     error_msg = quote(str(result))
+    #     return RedirectResponse(url=f"/login?msg={error_msg}", status_code=303)
 
 # =====================================================================
 # Insert page
@@ -205,7 +205,7 @@ async def search_stock_data(
     
     generated_email = f"{user_id}{allowed_domain}"
     
-    if not selected_cols: selected_cols = ["name", "Open", "Close", "Volume", "RSI"]
+    if not selected_cols: selected_cols = ["name", "open", "close", "volume", "RSI"]
 
     # 종목 코드 매핑 로직
     stock_map = {}
