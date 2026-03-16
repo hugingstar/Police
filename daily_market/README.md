@@ -12,3 +12,15 @@ ansible-playbook analysis_to_dags.yaml -k
 ```
 
 - 이 모듈은 상위 디렉토리에 있는 `ansinfra_airflow_build.yaml`에 하위 작업으로 포함된다.
+
+# Alone command
+- 관리자가 추가적으로 분석이 필요한 날의 결과를 출력하는 곳이다.
+- 조건 : A1Sheet가 완료된 상태이어야 한다.
+
+```
+# 날짜 지정하여 실행
+python main.py --start 2026-01-01 --end 2026-03-15
+
+# 인자에 대한 도움말
+python main.py --help
+```
