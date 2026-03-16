@@ -185,13 +185,13 @@ class MakeSheet():
                     df_sell, df_bull, df_bear = self.BuySellSheet(target_data)
 
                     if not df_sell.empty:
-                        df_sell.insert(0, "Name", name)
+                        df_sell.insert(0, "name", name)
                         df_sell_total = pd.concat([df_sell_total, df_sell])
                     if not df_bull.empty:
-                        df_bull.insert(0, "Name", name)
+                        df_bull.insert(0, "name", name)
                         df_bull_total = pd.concat([df_bull_total, df_bull])
                     if not df_bear.empty:
-                        df_bear.insert(0, "Name", name)
+                        df_bear.insert(0, "name", name)
                         df_bear_total = pd.concat([df_bear_total, df_bear])
 
                 except Exception as e:
