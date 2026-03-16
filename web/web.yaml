@@ -7,30 +7,28 @@ data:
   default.conf: |
     server {
         listen 80;
-        listen 443 ssl;
+        server_name kojel.com www.kojel.com;
         return 301 https://$host$request_uri;
+    }
+
+    server {
+        listen 443 ssl;
         server_name kojel.com www.kojel.com;
         charset utf-8;
+
         ssl_certificate /etc/nginx/ssl/tls.crt;
         ssl_certificate_key /etc/nginx/ssl/tls.key;
 
         location / {
             root /usr/share/nginx/html;
             index index.html;
+            try_files $uri $uri/ /index.html; # 여러 개의 HTML 파일 접근 허용
         }
+
         location /api {
             proxy_pass http://localhost:8000/;
         }
     }
-  index.html: |
-    <!DOCTYPE html>
-    <html>
-    <head><title>Kojel Web</title></head>
-    <body style="text-align:center; padding-top:50px; background-color:#f4f4f4;">
-        <h1> 웹 서버 가동 완료!</h1>
-        <p>Namespace: web | MetalLB IP: 10.22.0.10</p>
-    </body>
-    </html>
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -47,10 +45,10 @@ spec:
       labels:
         app: web-service
     spec:
-      dnsPolicy: "None"  
+      dnsPolicy: "None"
       dnsConfig:
         nameservers:
-          - 10.22.0.3    
+          - 10.22.0.3
       containers:
       - name: nginx
         image: nginx:latest
@@ -58,33 +56,35 @@ spec:
         - containerPort: 80
         - containerPort: 443
         volumeMounts:
-        - name: config-volume
+        - name: nginx-conf-vol
           mountPath: /etc/nginx/conf.d/default.conf
           subPath: default.conf
-        - name: config-volume
-          mountPath: /usr/share/nginx/html/index.html
-          subPath: index.html
+        - name: static-files-vol
+          mountPath: /usr/share/nginx/html # 8개의 HTML 파일이 들어가는 곳
         - name: ssl-certs
           mountPath: "/etc/nginx/ssl"
           readOnly: true
+      
       - name: fastapi
         image: python:3.9-slim
+        workingDir: /app
         command: ["/bin/sh", "-c"]
         args:
           - |
             pip install fastapi uvicorn
-            cat <<EOF > main.py
-            from fastapi import FastAPI
-            app = FastAPI()
-            @app.get('/')
-            def root():
-                return {'message': 'Running!'}
-            EOF
+            # 3개의 PY 파일이 이미 /app 폴더에 있으므로 바로 실행
             uvicorn main:app --host 0.0.0.0 --port 8000
+        volumeMounts:
+        - name: static-files-vol
+          mountPath: /app # 3개의 PY 파일이 들어가는 곳
+
       volumes:
-      - name: config-volume
+      - name: nginx-conf-vol
         configMap:
           name: nginx-config
+      - name: static-files-vol
+        configMap:
+          name: web-all-files # 사전 준비에서 만든 ConfigMap 이름
       - name: ssl-certs
         secret:
           secretName: kojel-tls-secret
@@ -108,6 +108,4 @@ spec:
     - name: https
       protocol: TCP
       port: 443
-      targetport: 443
-
-
+      targetPort: 443
