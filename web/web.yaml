@@ -1,0 +1,89 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-server
+  namespace: web
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: web-service
+  template:
+    metadata:
+      lables:
+        app: web-service
+    spec:
+      dnsPolicy: "None"
+      dnsConfig:
+        nameservers:
+          - 10.22.0.3
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+        - containerPort: 443
+        volumeMounts:
+        - name: proxy-vol
+          mountPath: /etc/nginx/conf.d/default.conf
+          subPath: default.conf
+        - name: static-vol
+          mountPath: /usr/share/nginx/html # 컨테이너 내부 HTML 파일
+        - name: ssl-certs
+          mountPath: "/etc/nginx/ssl"
+          readOnly: true
+        - name: was
+          image: python:3.9-slim
+          workingDir: /app
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              pip install fastapi uvicorn pandas Jinja2 pymysql mailbox
+              cd /usr/share/nginx/html
+              # main.py가 마운트된 경로에서 WAS 실행
+              python3 main.py
+          volumeMounts:
+          - name: was-vol
+            mountPath: /usr/share/nginx/html
+          - name: static-vol
+            mountPath: /usr/share/nginx/html/templates
+        
+      volumes:
+      - name: proxy-vol
+        hostPath:
+          path: /root/jjh/Police/web/default.conf
+          type: File
+      - name: static-vol
+        hostPath:
+          path: /root/yslee/Police/web_interface/templates
+          type: Directory
+      - name: was-vol
+        hostPath:
+          path: /root/yslee/Police/web_interface
+          type: Directory 
+      - name: ssl-certs
+        secret:
+          secretName: kojel-tls-secret
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-service
+  namespace: web
+  annotations:
+    metallb.io/loadBalancerIPs: 10.22.0.10
+spec:
+  type: LoadBalancer
+  selector:
+    app: web-service
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 80
+    - name: https
+      protocol: TCP
+      port: 443
+      targetPort: 443

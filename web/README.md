@@ -1,6 +1,6 @@
 # Web server service 설정 방법 
 
-## 초기 실행 
+## SSL-Secret 실행 
 - ssl 인증서 생성 및 Secret 생성
 
 ```
@@ -17,7 +17,42 @@ chmod +x ssl_secret.sh
 ./ssl_secret.sh
 ```
 
+## Proxy
+- default.conf에 proxy 설정
+- location 부분은 컨테이너(or 파드) 안쪽의 경로를 지정해준다.
 
+```
+# 작업 위치에서 default.conf 생성하고 아래의 내용 작성
+server {
+    listen 80;
+    server_name kojel.com www.kojel.com;
+    return 301 https://$host$request_uri;
+}
 
+server {
+    listen 443 ssl;
+    server_name kojel.com www.kojel.com;
+    charset utf-8;
 
+    ssl_certificate /etc/nginx/ssl/tls.crt;
+    ssl_certificate_key /etc/nginx/ssl/tls.key;
 
+    location / {
+        root /usr/share/nginx/html;
+        index login.html;
+    }
+
+    location /api {
+        proxy_pass http://localhost:8000/;
+    }
+}
+```
+
+## k8s web deployment, service, metallb 생성 및 배포
+
+- 
+
+```
+# 서비스 실행 자동
+./k8s_web_service.sh
+```
