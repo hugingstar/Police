@@ -19,8 +19,9 @@ ansible-playbook analysis_to_dags.yaml -k
 
 ```
 # 날짜 지정하여 실행
-python main.py --start 2026-01-01 --end 2026-03-15
+# cd /root/Police/daily_market/alone_command.py
+python alone_command.py --start 2026-01-01 --end 2026-03-15
 
 # 인자에 대한 도움말
-python main.py --help
+python alone_command.py --help
 ```
