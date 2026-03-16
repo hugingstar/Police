@@ -73,6 +73,9 @@ cd /root/jjh/Police/web
 
 # 권한 부여
 chmod +x k8s_web_service.sh
+chmod +x k8s_web_down.sh
 
+# 실행
 ./k8s_web_service.sh
+./k8s_web_down.sh
 ```
