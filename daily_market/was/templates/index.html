@@ -194,7 +194,7 @@
 
 <div class="container-fluid p-0">
     <nav class="sidebar">
-        <h3 class="mb-4 fw-bold px-2 sidebar-brand">GGeolmuBird</h3>
+        <h3 class="mb-4 fw-bold px-2 sidebar-brand">Secureties</h3>
         
         <form action="/" method="post">
             <div class="mb-3">
@@ -224,12 +224,12 @@
                         {% if selected_columns and col in selected_columns %}checked{% endif %}>
                         
                         <label class="form-check-label small" for="chk_{{ loop.index }}">
-                            {% if col == 'Name' %} 종목명
-                            {% elif col == 'Open' %} 시가
-                            {% elif col == 'High' %} 고가
-                            {% elif col == 'Low' %} 저가
-                            {% elif col == 'Close' %} 종가
-                            {% elif col == 'Volume' %} 거래량
+                            {% if col == 'name' %} 종목명
+                            {% elif col == 'open' %} 시가
+                            {% elif col == 'high' %} 고가
+                            {% elif col == 'low' %} 저가
+                            {% elif col == 'close' %} 종가
+                            {% elif col == 'volume' %} 거래량
                             {% else %} {{ col }}
                             {% endif %}
                         </label>
@@ -330,8 +330,8 @@
     {
         // (1) 표 헤더 한글 변환
         const headerMap = {
-            "Name": "종목명", "Open": "시가", "High": "고가",
-            "Low": "저가", "Close": "종가", "Volume": "거래량"
+            "name": "종목명", "open": "시가", "high": "고가",
+            "low": "저가", "close": "종가", "volume": "거래량"
         };
         const ths = document.querySelectorAll("thead th");
         ths.forEach(th => {
