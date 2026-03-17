@@ -35,6 +35,18 @@ for FILE in "${YAML_FILES[@]}"; do
     echo "----------------------------------------------------"
 done
 
-echo "모든 작업이 완료되었습니다."
+echo "--- [PV] Persistent volume list"
+kubectl get pv
 echo "현재 PV/PVC 상태 확인:"
-kubectl get pv,pvc
+echo "--- [PVC] namespace: default ---"
+kubectl get pvc -n default
+echo "--- [PVC] namespace: monitoring ---"
+kubectl get pvc -n monitoring
+echo "--- [PVC] namespace: was ---"
+kubectl get pvc -n was
+echo "--- [PVC] namespace: db ---"
+kubectl get pvc -n db
+echo "--- [PVC] namespace: web ---"
+kubectl get pvc -n web
+
+echo "모든 작업이 완료되었습니다."

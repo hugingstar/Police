@@ -33,5 +33,16 @@ for pv in "${PV_LIST[@]}"; do
     kubectl delete pv $pv --grace-period=0 --force 2>/dev/null
 done
 
+echo "--- [PVC] namespace: default ---"
+kubectl get pvc -n default
+echo "--- [PVC] namespace: monitoring ---"
+kubectl get pvc -n monitoring
+echo "--- [PVC] namespace: was ---"
+kubectl get pvc -n was
+echo "--- [PVC] namespace: db ---"
+kubectl get pvc -n db
+echo "--- [PVC] namespace: web ---"
+kubectl get pvc -n web
+echo "--- [PV] Persistent volume list"
+kubectl get pv
 echo "--- 모든 Terminating 리소스가 정리되었습니다. ---"
-kubectl get pv,pvc
