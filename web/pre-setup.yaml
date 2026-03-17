@@ -1,0 +1,27 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: web-permission-fixer
+  namespace: web
+spec:
+  template:
+    spec:
+      containers:
+      - name: chmod-helper
+        image: busybox
+        command: ["sh", "-c"]
+        args:
+          - |
+            echo "Starting permission setup for /jjh/Police/web/..."
+            chmod +x /workdir/*.sh
+            echo "✅ All shell scripts are now executable."
+            ls -al /workdir/*.sh
+        volumeMounts:
+        - name: web-source
+          mountPath: /workdir
+      restartPolicy: Never
+      volumes:
+      - name: web-source
+        hostPath:
+          path: /jjh/Police/web/  # 지혜가 알려준 실제 경로!
+          type: Directory
