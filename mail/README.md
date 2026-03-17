@@ -28,11 +28,13 @@ host_key_checking = False
 ```
 cd Police/mail
 ansible-playbook mail_set.yaml --syntax-check
+ansible-playbook nfs.yaml --syntax-check
 ```
 
 - playbook을 실행하여 DNS 설치 파일을 적용
 ```
 ansible-playbook mail_set.yaml -K
+ansible-playbook nfs.yaml -K
 ```
 
 - 수정 후 업데이트
