@@ -14,10 +14,10 @@ spec:
       labels:
         app: web-service
     spec:
-      dnsPolicy: "None"
-      dnsConfig:
-        nameservers:
-          - 10.22.0.3
+      dnsPolicy: "ClusterFirst"
+      # dnsConfig:
+      #   nameservers:
+      #     - 10.22.0.3
       containers:
       - name: nginx
         image: nginx:latest
