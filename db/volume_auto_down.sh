@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # YAML 파일들이 위치한 디렉토리 (현재 디렉토리 기준)
-YAML_DIR="nfs-pv"
+YAML_DIR="/root/Police/db/nfs-pv"
 
 # 실행할 파일 리스트 (의존성을 고려하여 순서대로 배열)
 # 만약 파일 내부에 PV와 PVC가 같이 있다면 순차 실행하면 됩니다.
