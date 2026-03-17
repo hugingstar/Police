@@ -11,7 +11,7 @@
   - name: 1. NFS 관리 디렉토리 생성 (/root/nfs_node)
     file:
        path: /mnt/mail_storage/sent_items
-       state: directory
+       state: file
        mode: '0755'
  
 
