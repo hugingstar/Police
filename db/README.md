@@ -1,9 +1,16 @@
-# MariaDB Deployment, Service
+# MariaDB service
+- 데이터베이스 설치
 
-
+## Persistent volume and Persistent volume claim
+- PV ohit 브랜치의 파일을 Github에서 내려받는다.
 
 ```
-volume_auto.sh
+git clone -b ohit --single-branch https://github.com/hugingstar/Police.git
+```
+
+```
+cd /root/Police/db
+./volume_auto_run.sh
 ```
 
 
