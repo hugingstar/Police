@@ -26,7 +26,18 @@ chmod +x volume_auto_down.sh
 
 ## k8s Deployment, Service
 
+- MariaDB Pod를 Service로 시작한다.
+- 데이터베이스 특성상 ReadWriteOnce NFS를 사용할 경우 1을 권장한다.
 
+```
+kubectl apply -f mariadb-service.yaml
+
+# 정상적으로 실행되고 있는지 확인
+kubectl get pods -l app=mariadb
+
+# DB가 정상적으로 실행되었는지 확인
+kubectl logs -f deployment/mariadb-deployment
+```
 
 
 
