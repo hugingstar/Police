@@ -21,6 +21,8 @@ spec:
       containers:
       - name: nginx
         image: nginx:latest
+        command: ["sleep"]
+        args: ["infinity"]
         ports:
         - containerPort: 80
         - containerPort: 443
