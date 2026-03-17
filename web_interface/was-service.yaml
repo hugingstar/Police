@@ -22,7 +22,7 @@ spec:
       - name: was-app
         image: yslee4050/fastapi:py39
         ports:
-        - containerPort: 8000 # WAS가 사용하는 포트 (예: 8080)
+        - containerPort: 8000 # WAS가 사용하는 포트 (예: 8000)
         
         # 만약 WAS에서도 NFS나 특정 설정값이 필요하다면 아래 볼륨 마운트를 활용하세요
         volumeMounts:
