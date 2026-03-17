@@ -69,6 +69,7 @@ ansible-playbook nfs_set_auto.yaml -k
 ## Airflow Node와의 연동 (Mount 자동화)
 
 - 일일 분석 결과를 제공하는 Airflow node와의 연동
+- 권한을 부여한 후에 실행한다.
 
 ```
 cd /root/nfs_node
@@ -78,6 +79,25 @@ chmod +x mount_from_airflow.sh
 
 # 마운트
 ./mount_from_airflow.sh
+```
+
+
+## Github 브랜치별 Crontab 적용
+- 설정한 시간이 지났을 때 `locate_branch.sh`를 실행하여 최신 깃허브 유지
+- 권한을 부여한 후에 crontab까지 실행한다.
+
+```
+cd /root/nfs_node
+
+# 권한부여
+chmod +x locate_branch.sh
+
+# 1회성 실행
+./locate_branch.sh
+
+# 반복적 실행 (로그 파일이 생성되면서 )
+crontab -e
+*/10 * * * * /root/locate_branch.sh >> /root/locate_branch.log 2>&1
 ```
 
 
