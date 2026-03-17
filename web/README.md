@@ -67,3 +67,9 @@ find . -name "*.py" -exec chmod +x {} +
 ```
 kubectl get po,svc,deploy -n web
 ```
+
+- Pod terminating 상황시 종료 방법 : force 옵션을 넣어야 한다.
+
+```
+kubectl delete -f <파일명>.yaml --force --grace-period=0
+```
