@@ -20,7 +20,7 @@
 |   └── 05_extract_configs.sh      # kubeconfig 자동 생성 스크립트
 ├── scripts/                        
 |   └── k8s-client-access.sh       # k8s 마스터 노드 접속 스크립트
-└──
+└── README.md
 ```
 
 **1. 네임스페이스 생성 (`01-namespaces.yaml`)**
