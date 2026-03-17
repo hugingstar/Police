@@ -24,7 +24,7 @@ chmod +x volume_auto_down.sh
 
 ```
 
-
+## k8s Deployment, Service
 
 
 
@@ -50,12 +50,6 @@ kubectl apply -f nfs-pv/
 
 # 2. PVC 생성
 kubectl apply -f nfs-pvc/
-
-# 3. 상태 확인 (STATUS가 Bound인지 확인)
-kubectl get pv,pvc
-### 클론 유의사항
-
-
 
 
 

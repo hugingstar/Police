@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mariadb-deployment
+  namespace: db
+  labels:
+    app: mariadb
+spec:
+  replicas: 1  # 데이터베이스 특성상 ReadWriteOnce NFS를 사용할 경우 1을 권장합니다.
+  selector:
+    matchLabels:
+      app: mariadb
+  template:
+    metadata:
+      labels:
+        app: mariadb
+    spec:
+      containers:
+      - name: mariadb
+        image: mariadb:10.6
+        env:
+        - name: MARIADB_ROOT_PASSWORD
+          value: "P@ssw0rd"
+        ports:
+        - containerPort: 3306
+        volumeMounts:
+        - name: nfs-db-volume
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: nfs-db-volume
+        nfs:
+          server: 10.15.0.170
+          path: /nfs_k8s/db
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mariadb-service
+  namespace: db
+spec:
+  selector:
+    app: mariadb  # Deployment의 template.labels와 일치해야 합니다.
+  ports:
+    - protocol: TCP
+      port: 3306      # 서비스가 노출할 포트
+      targetPort: 3306 # 파드 내부 컨테이너 포트
+  type: NodePort
