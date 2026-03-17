@@ -28,7 +28,7 @@ spec:
         volumeMounts:
         - name: config-vol
           mountPath: /etc/nginx/conf.d
-        - name: nfs-web-volume
+        - name: nfs-static-volume
           mountPath: /usr/share/nginx/html
         - name: ssl-certs
           mountPath: "/etc/nginx/ssl"
@@ -39,7 +39,7 @@ spec:
         nfs:
           server: 10.15.0.170
           path: /root/nfs_node/static/jjh/web/conf.d
-      - name: nfs-web-volume
+      - name: nfs-static-volume
         nfs:
           server: 10.15.0.170
           path: /root/nfs_node/was/yslee/web_interface/templates
