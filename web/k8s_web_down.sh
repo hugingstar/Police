@@ -1,6 +1,6 @@
 #!/bin/bash
 
-kubectl delete -f metallb.yaml -n web # metallb 파일도 있다면 포함
+kubectl delete -f metallb.yaml -n metallb-system # metallb 파일도 있다면 포함
 
 kubectl delete -f web.yaml -n web
 
