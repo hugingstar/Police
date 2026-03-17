@@ -8,10 +8,10 @@
     file:
        path: /root
        mode: '0755'
-  - name: 1. NFS 관리 디렉토리 생성 (/root/nfs_node)
+  - name: 1. NFS 관리 디렉토리 생성 (/mnt/mail_storage/sent_items)
     file:
        path: /mnt/mail_storage/sent_items
-       state: file
+       state: directory
        mode: '0755'
  
 
