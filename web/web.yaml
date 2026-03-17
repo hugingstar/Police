@@ -2,7 +2,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: web-server
+  name: web-service
   namespace: web
 spec:
   replicas: 2
@@ -71,6 +71,6 @@ spec:
       protocol: TCP
       port: 443
       targetPort: 443
-    - name: was-port  # 이 부분을 추가하세요!
+    - name: was-port
       port: 8000
       targetPort: 8000
