@@ -13,7 +13,6 @@ curl -sSL https://raw.githubusercontent.com/hugingstar/Police/refs/heads/yslee/i
 
 ```
 git clone -b ohit --single-branch https://github.com/hugingstar/Police.git
-
 ```
 
 
@@ -32,23 +31,23 @@ ansible-playbook disable_firewall.yaml -k
 - **NFS 서버 IP** : 10.15.0.170
 - **공유 디렉토리**: '/root/nfs_node'
 
-'static' : html과 같은 정적 파일 저장 위치
-'was' : python 파일과 같은 동적 파일 저장 위치
-'db' : 데이터 베이스 sql 파일 저장 위치
-'config' : 그 외 Configuration 파일 저장 위치
-'monitoring' : 모니터링 관련 파일 저장 위치
-'Data/KOSPI/A1Sheet' : 데이터 분석 결과 파이프라인 KOSPI 1종목당 분석 결과
-'Data/KOSPI/B1Sheet' : 데이터 분석 결과 파이프라인 KOSPI 1일 종목 요약
-'Data/KOSDAQ/A1Sheet' : 데이터 분석 결과 파이프라인 KOSDAQ 1종목당 분석 결과
-'Data/KOSDAQ/B1Sheet' : 데이터 분석 결과 파이프라인 KOSDAQ 1일 종목 요약
-'Data/NASDAQ/A1Sheet' : 데이터 분석 결과 파이프라인 NASDAQ 1종목당 분석 결과
-'Data/NASDAQ/B1Sheet' : 데이터 분석 결과 파이프라인 NASDAQ 1일 종목 요약
-'Data/NYSE/A1Sheet' : 데이터 분석 결과 파이프라인 NYSE 1종목당 분석 결과
-'Data/NYSE/B1Sheet': 데이터 분석 결과 파이프라인 NYSE 1일 종목 요약
+    - 'static' : html과 같은 정적 파일 저장 위치
+    - 'was' : python 파일과 같은 동적 파일 저장 위치
+    - 'db' : 데이터 베이스 sql 파일 저장 위치
+    - 'config' : 그 외 Configuration 파일 저장 위치
+    - 'monitoring' : 모니터링 관련 파일 저장 위치
+    - 'Data/KOSPI/A1Sheet' : 데이터 분석 결과 파이프라인 KOSPI 1종목당 분석 결과
+    - 'Data/KOSPI/B1Sheet' : 데이터 분석 결과 파이프라인 KOSPI 1일 종목 요약
+    - 'Data/KOSDAQ/A1Sheet' : 데이터 분석 결과 파이프라인 KOSDAQ 1종목당 분석 결과
+    - 'Data/KOSDAQ/B1Sheet' : 데이터 분석 결과 파이프라인 KOSDAQ 1일 종목 요약
+    - 'Data/NASDAQ/A1Sheet' : 데이터 분석 결과 파이프라인 NASDAQ 1종목당 분석 결과
+    - 'Data/NASDAQ/B1Sheet' : 데이터 분석 결과 파이프라인 NASDAQ 1일 종목 요약
+    - 'Data/NYSE/A1Sheet' : 데이터 분석 결과 파이프라인 NYSE 1종목당 분석 결과
+    - 'Data/NYSE/B1Sheet': 데이터 분석 결과 파이프라인 NYSE 1일 종목 요약
 
 ```
 # NFS Setting
-ansible-playbook setup_nfs.yaml -k
+ansible-playbook create_directories.yaml -k
 ```
 
 - `vi /etc/exports` 안에 설정된 내용 : 
@@ -73,6 +72,9 @@ ansible-playbook nfs_set_auto.yaml -k
 
 ```
 cd /root/nfs_node
+
+# 권한부여
+chmod +x mount_from_airflow.sh
 
 # 마운트
 ./mount_from_airflow.sh
