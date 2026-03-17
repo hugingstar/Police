@@ -1,10 +1,8 @@
 #!/bin/bash
 
-kubectl delete -f metallb.yaml -n metallb-system # metallb 파일도 있다면 포함
-
 kubectl delete -f web.yaml -n web
 
-kubectl delete -f config.yaml -n web
+kubectl delete -f metallb.yaml -n metallb-system # metallb 파일도 있다면 포함
 
 kubectl get pod,svc,deploy -n web
 
