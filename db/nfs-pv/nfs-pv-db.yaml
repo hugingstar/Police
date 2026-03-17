@@ -17,6 +17,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: nfs-pvc-db-ohit
+  namespace: db
 spec:
   storageClassName: ""
   accessModes: ["ReadWriteMany"]

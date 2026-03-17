@@ -8,9 +8,20 @@
 git clone -b ohit --single-branch https://github.com/hugingstar/Police.git
 ```
 
+- 해당 작업 경로로 들어가서 권한 부여 후 작동한다.
+
 ```
+# 작업 경로로 이동
 cd /root/Police/db
+
+# Volume 실행
+chmod +x volume_auto_run.sh
 ./volume_auto_run.sh
+
+# Volume claim 실행
+chmod +x volume_auto_down.sh
+./volume_auto_down.sh
+
 ```
 
 

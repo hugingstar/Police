@@ -16,6 +16,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: nfs-pvc-monitoring-kjs
+  namespace: monitoring
 spec:
   storageClassName: ""
   accessModes: ["ReadWriteMany"]
