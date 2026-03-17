@@ -1,26 +1,37 @@
 #!/bin/bash
 
-echo "--- 1. PVC (PersistentVolumeClaim) 삭제 시작 ---"
+# 1. PVC 강제 삭제 (Finalizers 제거)
+echo "--- 1. PVC 강제 정리 시작 ---"
+PVC_LIST=(
+  "nfs-pvc-db-ohit"
+  "nfs-pvc-monitoring-kjs"
+  "nfs-pvc-monitoring-prometheus"
+  "nfs-pvc-was-yslee"
+  "nfs-pvc-web-jjh"
+)
 
-# monitoring 네임스페이스
-kubectl delete pvc nfs-pvc-monitoring-prometheus -n monitoring
-kubectl delete pvc nfs-pvc-monitoring-kjs -n monitoring
+for pvc in "${PVC_LIST[@]}"; do
+    echo "PVC 패치 중: $pvc"
+    # default 네임스페이스에 있는 것으로 보이므로 -n default 사용 (필요시 변경)
+    kubectl patch pvc $pvc -n default -p '{"metadata":{"finalizers":null}}' --type merge 2>/dev/null
+    kubectl delete pvc $pvc -n default --grace-period=0 --force 2>/dev/null
+done
 
-# db 네임스페이스
-kubectl delete pvc nfs-pvc-db-ohit -n db
+# 2. PV 강제 삭제 (Finalizers 제거)
+echo "--- 2. PV 강제 정리 시작 ---"
+PV_LIST=(
+  "nfs-pv-db-ohit"
+  "nfs-pv-monitoring-kjs"
+  "nfs-pv-monitoring-prometheus"
+  "nfs-pv-was-yslee"
+  "nfs-pv-web-jjh"
+)
 
-# was 네임스페이스
-kubectl delete pvc nfs-pvc-was-yslee -n was
+for pv in "${PV_LIST[@]}"; do
+    echo "PV 패치 중: $pv"
+    kubectl patch pv $pv -p '{"metadata":{"finalizers":null}}' --type merge 2>/dev/null
+    kubectl delete pv $pv --grace-period=0 --force 2>/dev/null
+done
 
-# web 네임스페이스
-kubectl delete pvc nfs-pvc-web-jjh -n web
-
-echo "--- 2. PV (PersistentVolume) 삭제 시작 ---"
-
-kubectl delete pv nfs-pv-monitoring-prometheus
-kubectl delete pv nfs-pv-monitoring-kjs
-kubectl delete pv nfs-pv-db-ohit
-kubectl delete pv nfs-pv-was-yslee
-kubectl delete pv nfs-pv-web-jjh
-
-echo "--- 모든 삭제 작업이 완료되었습니다. ---"
+echo "--- 모든 Terminating 리소스가 정리되었습니다. ---"
+kubectl get pv,pvc
