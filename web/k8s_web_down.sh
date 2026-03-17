@@ -1,6 +1,8 @@
 #!/bin/bash
 
-kubectl delete all -l app=web-service -n web
+kubectl delete svc web-service -n web
+
+kubectl delete deploy web-service -n web
 
 kubectl delete -f metallb.yaml -n metallb-system # metallb 파일도 있다면 포함
 
