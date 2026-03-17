@@ -29,7 +29,7 @@ spec:
         - name: config-vol
           mountPath: /etc/nginx/conf.d
         - name: nfs-static-volume
-          mountPath: /usr/share/nginx/html
+          mountPath: /usr/share/nginx
         - name: ssl-certs
           mountPath: "/etc/nginx/ssl"
           readOnly: true
@@ -42,7 +42,7 @@ spec:
       - name: nfs-static-volume
         nfs:
           server: 10.15.0.170
-          path: /root/nfs_node/was/yslee/web_interface/templates
+          path: /root/nfs_node/was/yslee/web_interface
       - name: ssl-certs
         secret:
           secretName: kojel-tls-secret
