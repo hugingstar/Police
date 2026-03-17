@@ -1,37 +1,37 @@
 #!/bin/bash
 
-# 1. PVC 강제 삭제 (Finalizers 제거)
-echo "--- 1. PVC 강제 정리 시작 ---"
-PVC_LIST=(
-  "nfs-pvc-db-ohit"
-  "nfs-pvc-monitoring-kjs"
-  "nfs-pvc-monitoring-prometheus"
-  "nfs-pvc-was-yslee"
-  "nfs-pvc-web-jjh"
-)
+echo "--- Kubernetes PVC & PV 삭제를 시작합니다 ---"
 
-for pvc in "${PVC_LIST[@]}"; do
-    echo "PVC 패치 중: $pvc"
-    # default 네임스페이스에 있는 것으로 보이므로 -n default 사용 (필요시 변경)
-    kubectl patch pvc $pvc -n default -p '{"metadata":{"finalizers":null}}' --type merge 2>/dev/null
-    kubectl delete pvc $pvc -n default --grace-period=0 --force 2>/dev/null
-done
+# 1. PVC 삭제 (네임스페이스별)
+echo "[1/2] PVC 삭제 중..."
 
-# 2. PV 강제 삭제 (Finalizers 제거)
-echo "--- 2. PV 강제 정리 시작 ---"
-PV_LIST=(
-  "nfs-pv-db-ohit"
-  "nfs-pv-monitoring-kjs"
-  "nfs-pv-monitoring-prometheus"
-  "nfs-pv-was-yslee"
-  "nfs-pv-web-jjh"
-)
+# monitoring 네임스페이스
+kubectl delete pvc nfs-pvc-monitoring-prometheus -n monitoring --ignore-not-found
+kubectl delete pvc nfs-pvc-monitoring-kjs -n monitoring --ignore-not-found
 
-for pv in "${PV_LIST[@]}"; do
-    echo "PV 패치 중: $pv"
-    kubectl patch pv $pv -p '{"metadata":{"finalizers":null}}' --type merge 2>/dev/null
-    kubectl delete pv $pv --grace-period=0 --force 2>/dev/null
-done
+# was 네임스페이스
+kubectl delete pvc nfs-pvc-was-yslee -n was --ignore-not-found
+
+# web 네임스페이스
+kubectl delete pvc nfs-pvc-web-jjh -n web --ignore-not-found
+
+# default 네임스페이스 (중복 제거 및 명시적 삭제)
+kubectl delete pvc nfs-pvc-monitoring-prometheus -n default --ignore-not-found
+kubectl delete pvc nfs-pvc-monitoring-kjs -n default --ignore-not-found
+kubectl delete pvc nfs-pvc-was-yslee -n default --ignore-not-found
+kubectl delete pvc nfs-pvc-web-jjh -n default --ignore-not-found
+
+
+# 2. PV 삭제 (PV는 클러스터 단위 자원이므로 네임스페이스가 없음)
+echo "[2/2] PV 삭제 중..."
+
+kubectl delete pv nfs-pv-monitoring-prometheus --ignore-not-found
+kubectl delete pv nfs-pv-monitoring-kjs --ignore-not-found
+kubectl delete pv nfs-pv-db-ohit --ignore-not-found
+kubectl delete pv nfs-pv-was-yslee --ignore-not-found
+kubectl delete pv nfs-pv-web-jjh --ignore-not-found
+
+echo "--- 삭제 프로세스 완료 ---"
 
 echo "--- [PVC] namespace: default ---"
 kubectl get pvc -n default
@@ -45,4 +45,4 @@ echo "--- [PVC] namespace: web ---"
 kubectl get pvc -n web
 echo "--- [PV] Persistent volume list"
 kubectl get pv
-echo "--- 모든 Terminating 리소스가 정리되었습니다. ---"
+echo "--- 모든 PV, PVC 리소스가 정리되었습니다. ---"
