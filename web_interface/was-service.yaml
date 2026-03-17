@@ -31,8 +31,6 @@ spec:
           mountPath: /usr/share/nginx/html
         - name: mail-vol
           mountPath: /mnt/mail_storage
-        - name: mail-sent-vol
-          mountPath: /mnt/mail_storage/sent_items
           
       volumes:
       - name: was-vol
@@ -43,10 +41,7 @@ spec:
         nfs:
           server: 10.22.0.2
           path: /mnt/mail_storage
-      - name: mail-sent-vol
-        nfs:
-          server: 10.22.0.2
-          path: /mnt/mail_storage/sent_items
+
 ---
 apiVersion: v1
 kind: Service
