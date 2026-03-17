@@ -22,7 +22,7 @@ for FILE in "${YAML_FILES[@]}"; do
 
     if [ -f "$FILE_PATH" ]; then
         echo "[적용 중] $FILE..."
-        kubectl delete -f "$FILE_PATH"
+        kubectl apply -f "$FILE_PATH"
         
         if [ $? -eq 0 ]; then
             echo "성공: $FILE"
