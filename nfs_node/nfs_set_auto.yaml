@@ -1,0 +1,3 @@
+---
+- import_playbook: /root/Police/nfs_node/disable_firewall.yaml
+- import_playbook: /root/Police/nfs_node/create_directories.yaml
