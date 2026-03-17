@@ -104,4 +104,4 @@ systemctl status crond
 tail -10f /root/locate_branch.log
 ```
 
-
+![alt text](image.png)
