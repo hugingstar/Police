@@ -22,8 +22,10 @@ spec:
       - name: was-app
         image: yslee4050/fastapi:py39
         workingDir: /usr/share/nginx/html
-        command: ["uvicorn"]
-        args: ["main:app", "--host", "0.0.0.0", "--port", "8000"]
+        command: ["sleep"]
+        args: ["infinity"]
+        # command: ["uvicorn"]
+        # args: ["main:app", "--host", "0.0.0.0", "--port", "8000"]
         ports:
         - containerPort: 8000
         volumeMounts:
