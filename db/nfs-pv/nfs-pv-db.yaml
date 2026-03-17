@@ -1,14 +1,26 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: nfs-pv-db
+  name: nfs-pv-db-ohit
   labels:
     service: db
 spec:
   capacity:
-    storage: 10Gi
+    storage: 5Gi
   accessModes: ["ReadWriteMany"]
   persistentVolumeReclaimPolicy: Retain
   nfs:
     server: 10.15.0.170
-    path: /root/nfs_node/db
+    path: /root/nfs_node/db/ohit
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nfs-pvc-db-ohit
+spec:
+  storageClassName: ""
+  accessModes: ["ReadWriteMany"]
+  resources:
+    requests:
+      storage: 5Gi
+  volumeName: nfs-pv-db-ohit

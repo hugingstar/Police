@@ -1,13 +1,26 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: nfs-pv-monitoring
+  name: nfs-pv-monitoring-kjs
   labels:
     service: monitoring
 spec:
   capacity:
-    storage: 10Gi
+    storage: 5Gi
   accessModes: ["ReadWriteMany"]
   nfs:
     server: 10.15.0.170
-    path: /root/nfs_node/monitoring
+    path: /root/nfs_node/monitoring/kjs
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nfs-pvc-monitoring-kjs
+spec:
+  storageClassName: ""
+  accessModes: ["ReadWriteMany"]
+  resources:
+    requests:
+      storage: 5Gi
+  volumeName: nfs-pv-monitoring-kjs
