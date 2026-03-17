@@ -61,3 +61,9 @@ chmod +x k8s_web_down.sh
 find . -name "*.sh" -exec chmod +x {} +
 find . -name "*.py" -exec chmod +x {} +
 ```
+
+- 작동 상태 확인
+
+```
+kubectl get po,svc,deploy -n web
+```

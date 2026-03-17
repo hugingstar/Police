@@ -1,7 +1,4 @@
 ---
-
-
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -32,30 +29,8 @@ spec:
         - name: config-vol
           mountPath: /etc/nginx/conf.d/default.conf
           subPath: default.conf
-        - name: config-vol
-          mountPath: /usr/share/nginx/html/templates/login.html
-          subPath: login.html
-        - name: config-vol
-          mountPath: /usr/share/nginx/html/templates/index.html
-          subPath: index.html
-        - name: config-vol
-          mountPath: /usr/share/nginx/html/templates/stock.html
-          subPath: stock.html
-        - name: config-vol
-          mountPath: /usr/share/nginx/html/templates/list.html
-          subPath: list.html
-        - name: config-vol
-          mountPath: /usr/share/nginx/html/templates/mail.html
-          subPath: mail.html
-        - name: config-vol
-          mountPath: /usr/share/nginx/html/templates/inbox.html
-          subPath: inbox.html
-        - name: config-vol
-          mountPath: /usr/share/nginx/html/templates/sent.html
-          subPath: sent.html
-        - name: config-vol
-          mountPath: /usr/share/nginx/html/templates/delete.html
-          subPath: delete.html
+        - name: nfs-web-volume
+          mountPath: /usr/share/nginx/html
         - name: ssl-certs
           mountPath: "/etc/nginx/ssl"
           readOnly: true
@@ -64,6 +39,10 @@ spec:
       - name: config-vol
         configMap:
           name: nginx-config
+      - name: nfs-web-volume
+        nfs:
+          server: 10.15.0.170
+          path: /root/nfs_node/was/yslee/web_interface/templates
       - name: ssl-certs
         secret:
           secretName: kojel-tls-secret
