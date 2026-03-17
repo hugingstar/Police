@@ -17,7 +17,7 @@ import json
 
 # FastAPI
 app = FastAPI(title="Kojel Private equity Fund")
-templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory="/usr/share/nginx/html/templates")
 
 """
 Setting zone
@@ -54,7 +54,7 @@ MAIL_CONFIG = {
 # Database information
 DB_CONFIG = {
 
-    "host": "10.15.0.150", 
+    "host": "db-service", 
     "port": 3306, 
     "user": "root", 
     "password": "root", 

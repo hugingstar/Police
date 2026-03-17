@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: was-server
+  namespace: was
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: was-service
+  template:
+    metadata:
+      labels:
+        app: was-service
+    spec:
+      # Web 서버와 동일한 DNS 설정을 사용하는 경우 유지
+      dnsPolicy: "None"
+      dnsConfig:
+        nameservers:
+          - 10.22.0.3
+      containers:
+      - name: was-app
+        image: yslee4050/fastapi:py39
+        ports:
+        - containerPort: 8000 # WAS가 사용하는 포트 (예: 8080)
+        
+        # 만약 WAS에서도 NFS나 특정 설정값이 필요하다면 아래 볼륨 마운트를 활용하세요
+        volumeMounts:
+        - name: was-vol
+          mountPath: /usr/share/nginx/html
+        - name: mail-vol
+          mountPath: /mnt/mail_storage
+        - name: mail-sent-vol
+          mountPath: /mnt/mail_storage/sent_items
+          
+      volumes:
+      - name: was-vol
+        nfs:
+          server: 10.15.0.170
+          path: /root/nfs_node/was/yslee/web_interface # 실제 경로에 맞게 수정
+      - name: mail-vol
+        nfs:
+          server: 10.22.0.2
+          path: /mnt/mail_storage
+      - name: mail-sent-vol
+        nfs:
+          server: 10.22.0.2
+          path: /mnt/mail_storage/sent_items
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: was-service
+  namespace: was
+spec:
+  selector:
+    app: was-service
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8000       # 서비스 포트
+      targetPort: 8000 # 컨테이너 포트
+  type: ClusterIP # 내부 통신용
