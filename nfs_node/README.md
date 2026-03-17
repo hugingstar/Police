@@ -4,7 +4,7 @@
 - Ansible playbook을 사용하여 방화벽 해제 및 NFS 설정을 자동화한다.
 
 - Ansible 패키지 설지 자동화 (OS : Rocky9)
-
+- IP 설정은 수동으로한다.
 ```
 curl -sSL https://raw.githubusercontent.com/hugingstar/Police/refs/heads/yslee/install_ansible.sh | bash
 ```
@@ -14,7 +14,6 @@ curl -sSL https://raw.githubusercontent.com/hugingstar/Police/refs/heads/yslee/i
 ```
 git clone -b ohit --single-branch https://github.com/hugingstar/Police.git
 ```
-
 
 ## 방화벽 해제
 
@@ -53,6 +52,7 @@ ansible-playbook create_directories.yaml -k
 - `vi /etc/exports` 안에 설정된 내용 : 
 
 ```
+# 자동으로 설정된 값
 /root/nfs_node *(rw,sync,no_subtree_check,no_root_squash)
 ```
 
@@ -64,7 +64,6 @@ ansible-playbook create_directories.yaml -k
 cd /root/Police/nfs_node
 ansible-playbook nfs_set_auto.yaml -k
 ```
-
 
 ## Airflow Node와의 연동 (Mount 자동화)
 
@@ -81,7 +80,6 @@ chmod +x mount_from_airflow.sh
 ./mount_from_airflow.sh
 ```
 
-
 ## Github 브랜치별 Crontab 적용
 - 설정한 시간이 지났을 때 `locate_branch.sh`를 실행하여 최신 깃허브 유지
 - 권한을 부여한 후에 crontab까지 실행한다.
@@ -97,7 +95,13 @@ chmod +x locate_branch.sh
 
 # 반복적 실행 (로그 파일이 생성되면서 )
 crontab -e
-*/10 * * * * /root/locate_branch.sh >> /root/locate_branch.log 2>&1
+*/10 * * * * /root/Police/nfs_node/locate_branch.sh >> /root/locate_branch.log 2>&1
+
+# crond 상태 확인
+systemctl status crond
+
+# 생성된 로그 파일
+tail -10f /root/locate_branch.log
 ```
 
 
