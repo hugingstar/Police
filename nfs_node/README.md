@@ -3,8 +3,8 @@
 ## Ansible 설치
 - Ansible playbook을 사용하여 방화벽 해제 및 NFS 설정을 자동화한다.
 
-- Ansible 패키지 설지 자동화 (OS : Rocky9)
-- IP 설정은 수동으로한다.
+- Ansible 패키지 설치 자동화 (OS : Rocky9)
+- IP 설정은 수동으로 한다.
 ```
 curl -sSL https://raw.githubusercontent.com/hugingstar/Police/refs/heads/yslee/install_ansible.sh | bash
 ```
@@ -58,7 +58,7 @@ ansible-playbook create_directories.yaml -k
 
 ## 방화벽, exports 셋팅 자동화
 
-- 위에서 수행됭 과정이 귀찮을 수 있으니 ansible-playbook을 사용하여 낮춘다.
+- 위에서 수행된 과정이 귀찮을 수 있으니 ansible-playbook을 사용하여 낮춘다.
 
 ```
 cd /root/Police/nfs_node
@@ -73,7 +73,7 @@ ansible-playbook nfs_set_auto.yaml -k
 ```
 cd /root/nfs_node
 
-# 권한부여
+# 권한 부여
 chmod +x mount_from_airflow.sh
 
 # 마운트
@@ -87,7 +87,7 @@ chmod +x mount_from_airflow.sh
 ```
 cd /root/nfs_node
 
-# 권한부여
+# 권한 부여
 chmod +x locate_branch.sh
 
 # 1회성 실행
