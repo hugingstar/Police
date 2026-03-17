@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: mariadb
-        image: mariadb:10.11
+        image: mariadb:10.6
         env:
         - name: MARIADB_ROOT_PASSWORD
           value: "P@ssw0rd"
@@ -44,5 +44,4 @@ spec:
     - protocol: TCP
       port: 3306      # 서비스가 노출할 포트
       targetPort: 3306 # 파드 내부 컨테이너 포트
-      nodePort: 30306
-  type: NodePort
+  type: ClusterIP
