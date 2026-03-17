@@ -15,12 +15,15 @@ kubectl delete pvc nfs-pvc-was-yslee -n was --ignore-not-found
 # web 네임스페이스
 kubectl delete pvc nfs-pvc-web-jjh -n web --ignore-not-found
 
+# db 네임스페이스
+kubectl delete pvc nfs-pvc-db-ohit -n db --ignore-not-found
+
 # default 네임스페이스 (중복 제거 및 명시적 삭제)
+kubectl delete pvc nfs-pvc-db-ohit -n default --ignore-not-found
 kubectl delete pvc nfs-pvc-monitoring-prometheus -n default --ignore-not-found
 kubectl delete pvc nfs-pvc-monitoring-kjs -n default --ignore-not-found
 kubectl delete pvc nfs-pvc-was-yslee -n default --ignore-not-found
 kubectl delete pvc nfs-pvc-web-jjh -n default --ignore-not-found
-
 
 # 2. PV 삭제 (PV는 클러스터 단위 자원이므로 네임스페이스가 없음)
 echo "[2/2] PV 삭제 중..."
