@@ -31,21 +31,20 @@ spec:
         volumeMounts:
         - name: config-vol
           mountPath: /etc/nginx/conf.d
+          subPath: jjh/web/conf.d
         - name: nfs-static-volume
           mountPath: /usr/share/nginx/html
+          subPath: yslee/web_interface
         - name: ssl-certs
           mountPath: "/etc/nginx/ssl"
           readOnly: true
-
       volumes:
       - name: config-vol
-        nfs:
-          server: 10.15.0.170
-          path: /root/nfs_node/static/jjh/web/conf.d
+        persistentVolumeClaim:
+          claimName: nfs-pvc-web-jjh # /root/nfs_node/static
       - name: nfs-static-volume
-        nfs:
-          server: 10.15.0.170
-          path: /root/nfs_node/was/yslee/web_interface
+        persistentVolumeClaim:
+          claimName: nfs-pvc-web-yslee # /root/nfs_node/was
       - name: ssl-certs
         secret:
           secretName: kojel-tls-secret
