@@ -6,7 +6,7 @@ SECRET_NAME="kojel-tls-secret"
 CERT_FILE="kojel.crt"
 KEY_FILE="kojel.key"
 
-echo "🔐 1. SSL 인증서 및 개인키 생성을 시작합니다..."
+echo " 1. SSL 인증서 및 개인키 생성을 시작합니다."
 
 # 2. OpenSSL로 인증서 생성
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
@@ -14,13 +14,13 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
   -subj "/C=KR/ST=Seoul/L=Seoul/O=Kojel/CN=www.kojel.com"
 
 if [ $? -eq 0 ]; then
-    echo "✅ 인증서 파일 생성 완료: $CERT_FILE, $KEY_FILE"
+    echo " 인증서 파일 생성 완료: $CERT_FILE, $KEY_FILE"
 else
-    echo "❌ 인증서 생성 실패"
+    echo " 인증서 생성 실패"
     exit 1
 fi
 
-echo "🚀 2. 쿠버네티스 Secret 생성을 시작합니다 (Namespace: $NAMESPACE)"
+echo " 2. 쿠버네티스 Secret 생성을 시작합니다 (Namespace: $NAMESPACE)"
 
 # 3. 기존에 동일한 이름의 Secret이 있으면 삭제 (중복 방지)
 kubectl delete secret $SECRET_NAME -n $NAMESPACE --ignore-not-found
@@ -32,9 +32,9 @@ kubectl create secret tls $SECRET_NAME \
   -n $NAMESPACE
 
 if [ $? -eq 0 ]; then
-    echo "🎉 성공! '$SECRET_NAME'이(가) 정상적으로 생성되었습니다."
+    echo " '$SECRET_NAME'이(가) 정상적으로 생성되었습니다."
 else
-    echo "❌ Secret 생성 실패. Namespace '$NAMESPACE'가 존재하는지 확인하세요."
+    echo " Secret 생성 실패. Namespace '$NAMESPACE'가 존재하는지 확인하세요."
     exit 1
 fi
 
