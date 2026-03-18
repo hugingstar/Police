@@ -30,8 +30,8 @@ spec:
           mountPath: /etc/nginx/conf.d 
           subPath: jjh/web/conf.d
         - name: static-vol
-          mountPath: /usr/share/nginx/html/templates
-          subPath: jjh/web/html/templates
+          mountPath: /usr/share/nginx/html
+          subPath: jjh/web/html
         - name: ssl-certs
           mountPath: "/etc/nginx/ssl"
           readOnly: true
