@@ -1,6 +1,6 @@
 #!/bin/bash
 
-kubectl delete svc, deploy web-service -n web
+kubectl delete svc,deploy web-service -n web
 
 kubectl delete ipaddresspool,l2advertisement -n metallb-system --all
 
