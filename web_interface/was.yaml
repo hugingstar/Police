@@ -14,7 +14,7 @@ spec:
         app: was-service
     spec:
       containers:
-      - name: was-app
+      - name: was-service
         image: yslee4050/fastapi:py39
         workingDir: /app
         # 디버깅용
