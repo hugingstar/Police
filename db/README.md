@@ -42,25 +42,6 @@ kubectl get po,svc,deploy -n db
 # 정상적으로 실행되고 있는지 확인
 kubectl get pods -l app=mariadb
 
-# DB가 정상적으로 실행되었는지 확인
-kubectl logs -f deployment/mariadb-deployment
-
 # 서비스 삭제
 kubectl delete -f mariadb-service.yaml -n db
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-### 3. 데이터 임포트 및 복구 절차
-로컬(10.15.0.150)에 보관된 SQL 덤프 파일을 Pod 내부로 주입하여 데이터를 구성하였습니다.
-kubectl exec -i mariadb-pod -- mariadb -u root -p'P@ssw0rd' userdb < userdb.sql

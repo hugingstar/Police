@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mariadb-deployment
+  name: mariadb-service
   namespace: db
   labels:
     app: mariadb
@@ -9,11 +9,11 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: mariadb
+      app: mariadb-service
   template:
     metadata:
       labels:
-        app: mariadb
+        app: mariadb-service
     spec:
       containers:
       - name: mariadb
@@ -39,7 +39,7 @@ metadata:
   namespace: db
 spec:
   selector:
-    app: mariadb  # Deployment의 template.labels와 일치해야 합니다.
+    app: mariadb-service
   ports:
     - protocol: TCP
       port: 3306      # 서비스가 노출할 포트
