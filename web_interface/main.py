@@ -93,7 +93,7 @@ async def read_form(request: Request,
 async def login_form(request: Request, msg: str = None):
     return templates.TemplateResponse("login.html", {"request": request, "msg": msg})
 
-@app.post("/login")
+@api_router.post("/login")
 async def login(user_id: str = Form(...), password: str = Form(...)):
     db_handler = UserDBHandler(**DB_CONFIG)
     success, result = db_handler.verify_login(user_id, password)
@@ -453,6 +453,8 @@ async def logout():
     response = RedirectResponse(url=f"/login?msg={message}", status_code=303)
     response.delete_cookie(key="user_id")
     return response
+
+app.include_router(api_router)
 
 if __name__ == "__main__":
     import uvicorn
