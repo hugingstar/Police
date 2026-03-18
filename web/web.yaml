@@ -29,22 +29,19 @@ spec:
         - containerPort: 443
         - containerPort: 8000
         volumeMounts:
-        - name: config-vol
+        - name: web-vol
           mountPath: /etc/nginx/conf.d
           subPath: jjh/web/conf.d
         - name: nfs-static-volume
           mountPath: /usr/share/nginx/html
-          subPath: yslee/web_interface
+          subPath: jjh/web/html
         - name: ssl-certs
           mountPath: "/etc/nginx/ssl"
           readOnly: true
       volumes:
-      - name: config-vol
+      - name: web-vol
         persistentVolumeClaim:
           claimName: nfs-pvc-web-jjh # /root/nfs_node/static
-      - name: nfs-static-volume
-        persistentVolumeClaim:
-          claimName: nfs-pvc-web-yslee # /root/nfs_node/was
       - name: ssl-certs
         secret:
           secretName: kojel-tls-secret
