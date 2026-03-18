@@ -5,7 +5,7 @@ metadata:
   name: mariadb-service
   namespace: db
   labels:
-    app: mariadb
+    app: mariadb-service
 spec:
   replicas: 1
   selector:
