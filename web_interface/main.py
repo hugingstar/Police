@@ -65,7 +65,7 @@ DB_CONFIG = {
 
 # Monitoring
 DATA_ROOT_DIR = "/root/Data"
-STOCK_LIST_ROOT = "/root/Police/postgres_server/market"
+STOCK_LIST_ROOT = "/root/market"
 MARKETS = ["KOSPI", "KOSDAQ", "NASDAQ", "NYSE"]
 ALL_COLUMNS = ["name", "open", "high", "low", "close", "volume", "RSI", "CCI", "MACD", "ADX", "Drawdown"] # 가독성을 위해 요약
 
@@ -117,7 +117,7 @@ async def login(user_id: str = Form(...), password: str = Form(...)):
 # Insert page
 @app.get("/insert", response_class=HTMLResponse)
 async def insert_form(request: Request, msg: str = None):
-    return templates.TemplateResponse("index.html", {"request": request, "msg": msg})
+    return templates.TemplateResponse("insert.html", {"request": request, "msg": msg})
 
 @app.post("/insert")
 async def create_user(
@@ -295,7 +295,7 @@ async def list_users(
     else:
         msg = f"데이터베이스 에러: {result}"
         print(msg)
-    return templates.TemplateResponse("list.html", {
+    return templates.TemplateResponse("users.html", {
         "request": request, 
         "table": table_html, 
         "user_id": user_id,

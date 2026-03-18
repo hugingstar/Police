@@ -23,27 +23,37 @@ spec:
         command: ["/bin/sh", "-c"]
         args:
           - |
-            cd /usr/share/nginx/html && \
-            pip install pymysql pandas && \
-            python main.py
+            pip install pymysql pandas
+            python /usr/share/nginx/html/main.py
         ports:
         - containerPort: 8000
         volumeMounts:
-        - name: nfs-static-volume
+        - name: dynamic-vol
           mountPath: /usr/share/nginx/html
         - name: mail-vol
           mountPath: /mnt/mail_storage
+        - name: data-vol
+          mountPath: /root/Data
+        - name: market-vol
+          mountPath: /root/market
           
       volumes:
-      - name: nfs-static-volume
-        nfs:
+      - name: dynamic-vol
+        nfs: 
           server: 10.15.0.170
           path: /root/nfs_node/was/yslee/web_interface
       - name: mail-vol
         nfs:
           server: 10.22.0.2
           path: /mnt/mail_storage
-
+      - name: data-vol
+        nfs:
+          server: 10.15.0.170
+          path: /root/nfs_node/Data
+      - name: market-vol
+        nfs:
+          server: 10.15.0.170
+          path: /root/nfs_node/was/yslee/postgres_server/market
 ---
 apiVersion: v1
 kind: Service
