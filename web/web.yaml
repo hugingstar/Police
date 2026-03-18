@@ -37,11 +37,14 @@ spec:
           readOnly: true
       volumes:
       - name: config-vol
-        persistentVolumeClaim:
-          claimName: nfs-pvc-web-jjh # /root/nfs_node/static
+        nfs:
+          server: 10.15.0.170
+          path: /root/nfs_node/was/yslee/web_interface
+        # persistentVolumeClaim:
+          # claimName: nfs-pvc-web-jjh # /root/nfs_node/static
       - name: static-vol
-        persistentVolumeClaim:
-          claimName: nfs-pvc-web-jjh # /root/nfs_node/static
+        # persistentVolumeClaim:
+          # claimName: nfs-pvc-web-jjh # /root/nfs_node/static
       - name: ssl-certs
         secret:
           secretName: kojel-tls-secret
