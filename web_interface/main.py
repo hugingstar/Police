@@ -18,7 +18,7 @@ import json
 # FastAPI
 app = FastAPI(title="Kojel Private equity Fund")
 # 컨테이너 내부 경로를 입력
-templates = Jinja2Templates(directory="/usr/share/nginx/html/templates")
+templates = Jinja2Templates(directory="templates")
 
 """
 Setting zone
