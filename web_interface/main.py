@@ -17,7 +17,8 @@ import json
 
 # FastAPI
 app = FastAPI(title="Kojel Private equity Fund")
-templates = Jinja2Templates(directory="/usr/share/nginx/html/templates")
+# 컨테이너 내부 경로를 입력
+templates = Jinja2Templates(directory="/usr/share/nginx/html")
 
 """
 Setting zone
@@ -54,7 +55,7 @@ MAIL_CONFIG = {
 # Database information
 DB_CONFIG = {
 
-    "host": "db-service", 
+    "host": "mariadb-service", 
     "port": 3306, 
     "user": "root", 
     "password": "root", 
@@ -96,21 +97,21 @@ async def login(user_id: str = Form(...), password: str = Form(...)):
     db_handler = UserDBHandler(**DB_CONFIG)
     success, result = db_handler.verify_login(user_id, password)
     
-    # # 디버깅시 로그인 비활성화
-    message = quote(f"{result}님, 환영합니다!")
-    redirect_response = RedirectResponse(url=f"/users?msg={message}", status_code=303)
-    redirect_response.set_cookie(key="user_id", value=user_id, httponly=True)
-    return redirect_response
+    # # # 디버깅시 로그인 비활성화
+    # message = quote(f"{result}님, 환영합니다!")
+    # redirect_response = RedirectResponse(url=f"/users?msg={message}", status_code=303)
+    # redirect_response.set_cookie(key="user_id", value=user_id, httponly=True)
+    # return redirect_response
 
-    # if success:
-    #     # result(사용자명)에 한글이 포함될 수 있으므로 quote로 감쌉니다.
-    #     message = quote(f"{result}님, 환영합니다!")
-    #     redirect_response = RedirectResponse(url=f"/users?msg={message}", status_code=303)
-    #     redirect_response.set_cookie(key="user_id", value=user_id, httponly=True)
-    #     return redirect_response
-    # else:
-    #     error_msg = quote(str(result))
-    #     return RedirectResponse(url=f"/login?msg={error_msg}", status_code=303)
+    if success:
+        # result(사용자명)에 한글이 포함될 수 있으므로 quote로 감쌉니다.
+        message = quote(f"{result}님, 환영합니다!")
+        redirect_response = RedirectResponse(url=f"/users?msg={message}", status_code=303)
+        redirect_response.set_cookie(key="user_id", value=user_id, httponly=True)
+        return redirect_response
+    else:
+        error_msg = quote(str(result))
+        return RedirectResponse(url=f"/login?msg={error_msg}", status_code=303)
 
 # =====================================================================
 # Insert page
