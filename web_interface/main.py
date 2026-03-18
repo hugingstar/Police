@@ -17,7 +17,7 @@ import json
 
 # FastAPI
 app = FastAPI(title="Kojel Private equity Fund")
-api_router = APIRouter(prefix="/api") # APIRouter 적용
+api_router = APIRouter() # APIRouter 적용
 # 컨테이너 내부 경로를 입력
 templates = Jinja2Templates(directory="/usr/share/nginx/html/templates")
 
@@ -454,7 +454,7 @@ async def logout():
     response.delete_cookie(key="user_id")
     return response
 
-app.include_router(api_router)
+app.include_router(api_router, prefix="/api")
 
 if __name__ == "__main__":
     import uvicorn
