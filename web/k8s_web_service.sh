@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # metallb.yaml 실행
-echo "Step 3: Deploying metallb.yaml..."
+echo "Step 1: Deploying metallb.yaml..."
 if [ -f "metallb.yaml" ]; then
     kubectl apply -f metallb.yaml
     if [ $? -eq 0 ]; then
