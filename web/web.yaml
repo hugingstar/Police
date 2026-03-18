@@ -28,8 +28,10 @@ spec:
         volumeMounts:
         - name: config-vol
           mountPath: /etc/nginx/conf.d
+          subPath: static/jjh/web/conf.d
         - name: static-vol
           mountPath: /usr/share/nginx/html
+          subPath: static/jjh/web/html
         - name: ssl-certs
           mountPath: "/etc/nginx/ssl"
           readOnly: true
@@ -37,11 +39,11 @@ spec:
       - name: config-vol
         nfs:
           server: 10.15.0.170
-          path: /root/nfs_node/web/jjh/web/conf.d
+          path: /root/nfs_node
       - name: static-vol
         nfs:
           server: 10.15.0.170
-          path: /root/nfs_node/web/jjh/web/html
+          path: /root/nfs_node
       - name: ssl-certs
         secret:
           secretName: kojel-tls-secret
