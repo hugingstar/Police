@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, Form, Cookie, Depends, Query
+from fastapi import FastAPI, Request, Form, Cookie, Depends, Query, APIRouter
 from urllib.parse import quote
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
