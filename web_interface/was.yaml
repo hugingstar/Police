@@ -17,14 +17,11 @@ spec:
       - name: was-service
         image: yslee4050/fastapi:py39
         workingDir: /usr/share/nginx/html
-        # 디버깅용
-        # command: ["sleep"]
-        # args: ["infinity"]
         command: ["/bin/sh", "-c"]
         args:
           - |
-            pip install pymysql pandas uvicorn
-            python3 main.py
+            pip install --no-cache-dir pymysql pandas uvicorn
+            uvicorn main:app --host 0.0.0.0 --port 8000 --workers 1
         ports:
         - containerPort: 8000
         volumeMounts:
