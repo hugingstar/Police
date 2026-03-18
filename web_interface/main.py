@@ -58,7 +58,7 @@ DB_CONFIG = {
     "host": "mariadb-service", 
     "port": 3306, 
     "user": "root", 
-    "password": "root", 
+    "password": "P@ssw0rd", 
     "db_name": "userdb", 
     "tbl_name": "members"
 }

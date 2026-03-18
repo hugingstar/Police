@@ -6,7 +6,6 @@
 git clone -b yslee --single-branch https://github.com/hugingstar/Police.git
 ```
 
-
 - WAS 서비스 배포 자동화 Shell
 
 ```
@@ -33,3 +32,12 @@ chmod +x k8s_was_down.sh
 ./k8s_was_down.sh
 ```
 
+- 내부 파이썬 파일
+
+```
+# 파드 접속
+kubectl exec -it <Pod-이름> -n was -- /bin/sh
+
+# 파이썬 파일
+ps -ef | grep python
+```
