@@ -86,7 +86,7 @@
             <h2 class="list-title">📋 회원 등록 정보 목록</h2>
             <hr>
             
-            <form action="/users" method="get" class="search-container">
+            <form action="/api/users" method="get" class="search-container">
                 <input type="text" name="dept" class="search-input" placeholder="부서명 검색" 
                        value="{{ request.query_params.get('dept', '') }}">
                 
