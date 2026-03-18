@@ -16,15 +16,15 @@ spec:
       containers:
       - name: was-service
         image: yslee4050/fastapi:py39
-        workingDir: /app
+        workingDir: /usr/share/nginx/html
         # 디버깅용
         # command: ["sleep"]
         # args: ["infinity"]
         command: ["/bin/sh", "-c"]
         args:
           - |
-            pip install pymysql pandas
-            python /usr/share/nginx/html/main.py
+            pip install pymysql pandas uvicorn
+            python3 main.py
         ports:
         - containerPort: 8000
         volumeMounts:
