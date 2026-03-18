@@ -10,6 +10,12 @@ chmod +x k8s_was_service.sh
 ./k8s_was_service.sh
 ```
 
+- k8s 배포 상태 확인 방법
+
+```
+kubectl get po,svc,deploy -n was
+```
+
 - WAS 서비스 회수 자동화 Shell
 
 ```
@@ -19,3 +25,4 @@ chmod +x k8s_was_down.sh
 # 회수 시작
 ./k8s_was_down.sh
 ```
+
