@@ -15,26 +15,23 @@ spec:
         app: web-service
     spec:
       dnsPolicy: "ClusterFirst"
-      # dnsConfig:
-      #   nameservers:
-      #     - 10.22.0.3
       containers:
       - name: nginx
         image: nginx:latest
         # 디버깅
-        command: ["sleep"]
-        args: ["infinity"]
+        # command: ["sleep"]
+        # args: ["infinity"]
         ports:
         - containerPort: 80
         - containerPort: 443
         - containerPort: 8000
         volumeMounts:
         - name: config-vol
-          mountPath: /etc/nginx/conf.d
+          mountPath: /etc/nginx/conf.d 
           subPath: jjh/web/conf.d
-        - name: nfs-static-volume
-          mountPath: /usr/share/nginx/html
-          subPath: jjh/web/html
+        - name: static-vol
+          mountPath: /usr/share/nginx/html/templates
+          subPath: jjh/web/html/templates
         - name: ssl-certs
           mountPath: "/etc/nginx/ssl"
           readOnly: true
@@ -42,9 +39,9 @@ spec:
       - name: config-vol
         persistentVolumeClaim:
           claimName: nfs-pvc-web-jjh # /root/nfs_node/static
-      - name: nfs-static-volume
+      - name: static-vol
         persistentVolumeClaim:
-          claimName: nfs-pvc-web-jjh # /root/nfs_node/was
+          claimName: nfs-pvc-web-jjh # /root/nfs_node/static
       - name: ssl-certs
         secret:
           secretName: kojel-tls-secret
