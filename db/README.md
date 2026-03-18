@@ -45,3 +45,15 @@ kubectl get pods -l app=mariadb
 # 서비스 삭제
 kubectl delete -f mariadb-service.yaml -n db
 ```
+
+- Shell scripts를 사용하여 서비스 시작/회수를 자동화
+
+```
+# mariadb service 실행
+chmod +x k8s_mariadb_service.sh
+./k8s_mariadb_service.sh
+
+# mariadb service 회수
+chmod +x k8s_mariadb_down.sh
+./k8s_mariadb_down.sh
+```

@@ -2,4 +2,4 @@
 
 kubectl delete svc, deploy mariadb-service -n db
 
-kubectl get all -n web
+kubectl get all -n db
