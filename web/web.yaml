@@ -27,7 +27,7 @@ spec:
         - containerPort: 8000
         volumeMounts:
         - name: config-vol
-          mountPath: /etc/nginx/conf.d  
+          mountPath: /etc/nginx/conf.d
         - name: static-vol
           mountPath: /usr/share/nginx/html
         - name: ssl-certs
