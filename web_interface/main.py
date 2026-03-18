@@ -17,7 +17,7 @@ import json
 
 # FastAPI
 app = FastAPI(title="Kojel Private equity Fund")
-api_router = APIRouter(prefix="/api")
+api_router = APIRouter(prefix="/api") # APIRouter 적용
 # 컨테이너 내부 경로를 입력
 templates = Jinja2Templates(directory="templates")
 
