@@ -105,3 +105,17 @@ tail -10f /root/locate_branch.log
 ```
 
 ![alt text](image.png)
+
+
+- 권한문제 : 원격으로 Pod를 띄우는 과정에서 업데이트가 될 때마다 경로를 지정해주는 방법
+
+```
+setfacl -R -m u::rwx,g::rwx,o::rwx /root/nfs_node/static/jjh
+setfacl -R -m u::rwx,g::rwx,o::rwx /root/nfs_node/was/yslee
+setfacl -R -m u::rwx,g::rwx,o::rwx /root/nfs_node/db/ohit
+
+setfacl -R -d -m u::rwx,g::rwx,o::rwx /root/nfs_node/static/jjh
+setfacl -R -d -m u::rwx,g::rwx,o::rwx /root/nfs_node/was/yslee
+setfacl -R -d -m u::rwx,g::rwx,o::rwx /root/nfs_node/db/ohit
+
+```
