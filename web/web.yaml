@@ -15,23 +15,12 @@ spec:
         app: web-service
     spec:
       dnsPolicy: "ClusterFirst"
-      initContainers:
-      - name: fix-permissions
-        image: busybox
-        command: ["sh", "-c", "chmod -R 777 /etc/nginx/conf.d /usr/share/nginx/html"]
-        volumeMounts:
-        - name: config-vol
-          mountPath: /etc/nginx/conf.d 
-          subPath: jjh/web/conf.d
-        - name: static-vol
-          mountPath: /usr/share/nginx/html
-          subPath: jjh/web/html
       containers:
       - name: nginx
         image: nginx:latest
         # 디버깅
-        # command: ["sleep"]
-        # args: ["infinity"]
+        command: ["sleep"]
+        args: ["infinity"]
         ports:
         - containerPort: 80
         - containerPort: 443
