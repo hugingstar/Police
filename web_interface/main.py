@@ -16,7 +16,7 @@ import json
 
 
 # FastAPI
-app = FastAPI(title="Kojel Private equity Fund")
+app = FastAPI(title="Kojel Private equity Fund", root_path="/api")
 # 컨테이너 내부 경로를 입력
 templates = Jinja2Templates(directory="templates")
 
@@ -195,8 +195,9 @@ async def search_stock_data(
     selected_cols: List[str] = Form(None),
     user_id: str = Depends(get_current_user)
 ):
-    if not user_id: 
-        return RedirectResponse(url="/login", status_code=303)
+    if not user_id:
+        return RedirectResponse(url="/login?msg=" + quote("로그인이 필요합니다."), status_code=303)
+    
     
     generated_email = f"{user_id}{allowed_domain}"
     
