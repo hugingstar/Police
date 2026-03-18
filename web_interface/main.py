@@ -16,7 +16,8 @@ import json
 
 
 # FastAPI
-app = FastAPI(title="Kojel Private equity Fund", root_path="/api")
+app = FastAPI(title="Kojel Private equity Fund")
+api_router = APIRouter(prefix="/api")
 # 컨테이너 내부 경로를 입력
 templates = Jinja2Templates(directory="templates")
 
@@ -81,14 +82,14 @@ def get_current_user(user_id: Optional[str] = Cookie(None)):
 
 # First main page
 
-@app.get("/", response_class=HTMLResponse)
+@api_router.get("/", response_class=HTMLResponse)
 async def read_form(request: Request, 
                     msg: str = None):
     return templates.TemplateResponse("login.html", {"request": request, "msg": msg})
 # =====================================================================
 
 # Login page
-@app.get("/login", response_class=HTMLResponse)
+@api_router.get("/login", response_class=HTMLResponse)
 async def login_form(request: Request, msg: str = None):
     return templates.TemplateResponse("login.html", {"request": request, "msg": msg})
 
@@ -109,7 +110,7 @@ async def login(user_id: str = Form(...), password: str = Form(...)):
 
 # =====================================================================
 # Insert page
-@app.get("/insert", response_class=HTMLResponse)
+@api_router.get("/insert", response_class=HTMLResponse)
 async def insert_form(request: Request, msg: str = None):
     return templates.TemplateResponse("insert.html", {"request": request, "msg": msg})
 
@@ -168,7 +169,7 @@ async def create_user(
     return RedirectResponse(url=f"/insert?msg={message}", status_code=303)
 
 # Monitoring
-@app.get("/stock", response_class=HTMLResponse)
+@api_router.get("/stock", response_class=HTMLResponse)
 async def stock_main(request: Request, user_id: str = Depends(get_current_user)):
     if not user_id:
         return RedirectResponse(url="/login?msg=" + quote("로그인이 필요합니다."), status_code=303)
@@ -260,7 +261,7 @@ async def search_stock_data(
 
 # =====================================================================
 # user list page
-@app.get("/users", response_class=HTMLResponse)
+@api_router.get("/users", response_class=HTMLResponse)
 async def list_users(
     request: Request, 
     msg: Optional[str] = Query(None),  # Optional 및 Query(None) 명시
@@ -300,7 +301,7 @@ async def list_users(
 
 # =====================================================================
 # Send Mail page
-@app.get("/mail", response_class=HTMLResponse)
+@api_router.get("/mail", response_class=HTMLResponse)
 async def mail_page(request: Request, msg: str = None, user_id: str = Depends(get_current_user)):
 
     if not user_id:
@@ -343,7 +344,7 @@ async def send_mail(
 
 # =====================================================================
 # Inbox page
-@app.get("/inbox", response_class=HTMLResponse)
+@api_router.get("/inbox", response_class=HTMLResponse)
 async def inbox_page(request: Request, user_id: str = Depends(get_current_user)):
     if not user_id:
         return RedirectResponse(url="/login?msg=로그인이 필요합니다.", status_code=303)
@@ -365,7 +366,7 @@ async def inbox_page(request: Request, user_id: str = Depends(get_current_user))
 
 # =====================================================================
 # Sent page
-@app.get("/sent", response_class=HTMLResponse)
+@api_router.get("/sent", response_class=HTMLResponse)
 async def sent_page(request: Request, user_id: str = Depends(get_current_user)):
     if not user_id:
         return RedirectResponse(url="/login?msg=로그인이 필요합니다.", status_code=303)
@@ -416,7 +417,7 @@ async def sent_page(request: Request, user_id: str = Depends(get_current_user)):
 
 # =====================================================================
 # Delete page
-@app.get("/delete", response_class=HTMLResponse)
+@api_router.get("/delete", response_class=HTMLResponse)
 async def delete_page(request: Request, msg: str = None, user_id: str = Depends(get_current_user)):
     if not user_id:
         return RedirectResponse(url="/login?msg=로그인이 필요합니다.", status_code=303)
@@ -444,7 +445,7 @@ async def delete_user(
 # =====================================================================
 
 # Logout
-@app.get("/logout")
+@api_router.get("/logout")
 async def logout():
     """쿠키를 삭제하여 로그아웃 처리"""
     message = quote("로그아웃 되었습니다.")
