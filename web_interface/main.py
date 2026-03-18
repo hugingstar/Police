@@ -19,7 +19,7 @@ import json
 app = FastAPI(title="Kojel Private equity Fund")
 api_router = APIRouter(prefix="/api") # APIRouter 적용
 # 컨테이너 내부 경로를 입력
-templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory="/usr/share/nginx/html/templates")
 
 """
 Setting zone
@@ -56,7 +56,7 @@ MAIL_CONFIG = {
 # Database information
 DB_CONFIG = {
 
-    "host": "mariadb-service", 
+    "host": "mariadb-service.db.svc.cluster.local", 
     "port": 3306, 
     "user": "root", 
     "password": "P@ssw0rd", 
@@ -114,7 +114,7 @@ async def login(user_id: str = Form(...), password: str = Form(...)):
 async def insert_form(request: Request, msg: str = None):
     return templates.TemplateResponse("insert.html", {"request": request, "msg": msg})
 
-@app.post("/insert")
+@api_router.post("/insert")
 async def create_user(
     user_id: str = Form(...), 
     password: str = Form(...),
@@ -188,7 +188,7 @@ async def stock_main(request: Request, user_id: str = Depends(get_current_user))
         "selected_market": "KOSPI"
     })
 
-@app.post("/stock", response_class=HTMLResponse)
+@api_router.post("/stock", response_class=HTMLResponse)
 async def search_stock_data(
     request: Request,
     target_date: str = Form(...),
@@ -309,7 +309,7 @@ async def mail_page(request: Request, msg: str = None, user_id: str = Depends(ge
     generated_email = f"{user_id}{allowed_domain}"
     return templates.TemplateResponse("mail.html", {"request": request, "msg": msg, "user_id": user_id, "email" : generated_email})
 
-@app.post("/send_mail")
+@api_router.post("/send_mail")
 async def send_mail(
     receiver: str = Form(...),
     subject: str = Form(...),
@@ -423,7 +423,7 @@ async def delete_page(request: Request, msg: str = None, user_id: str = Depends(
         return RedirectResponse(url="/login?msg=로그인이 필요합니다.", status_code=303)
     return templates.TemplateResponse("delete.html", {"request": request, "msg": msg})
 
-@app.post("/delete")
+@api_router.post("/delete")
 async def delete_user(
     user_id_cookie: str = Depends(get_current_user),
     user_id: str = Form(...), 
