@@ -1,10 +1,10 @@
 import os
 from kafka import KafkaConsumer
 
-# 설정
+# 설정 값
 KAFKA_SERVER = 'localhost:9092'
 TOPIC_NAME = 'file-transfer'
-SAVE_DIR = '/path/to/save/directory' # 저장할 디렉토리
+SAVE_DIR = '/root/nfs_node/Data' # 저장할 디렉토리
 
 if not os.path.exists(SAVE_DIR):
     os.makedirs(SAVE_DIR)
