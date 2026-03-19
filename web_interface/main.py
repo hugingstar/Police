@@ -222,7 +222,7 @@ async def search_stock_data(
         chart_data[key] = []
         if os.path.exists(file_path):
             try:
-                df = pd.read_csv(file_path, encoding='cp949')
+                df = pd.read_csv(file_path, encoding='utf-8-sig')
                 if set(['name', 'RSI5', 'CCI5']).issubset(df.columns):
                     chart_data[key] = df[['name', 'RSI5', 'CCI5']].fillna(0).to_dict(orient='records')
                 
