@@ -29,34 +29,9 @@ spec:
         - name: data-vol
           mountPath: /usr/share/nginx/html
           subPath: was/yslee/web_interface
-        # KOSPI
         - name: data-vol
-          mountPath: /root/Data/KOSPI/A1Sheet
-          subPath: Data/KOSPI/A1Sheet
-        - name: data-vol
-          mountPath: /root/Data/KOSPI/B1Sheet
-          subPath: Data/KOSPI/B1Sheet
-        # KOSDAQ
-        - name: data-vol
-          mountPath: /root/Data/KOSDAQ/A1Sheet
-          subPath: Data/KOSDAQ/A1Sheet
-        - name: data-vol
-          mountPath: /root/Data/KOSDAQ/B1Sheet
-          subPath: Data/KOSDAQ/B1Sheet
-        # NASDAQ
-        - name: data-vol
-          mountPath: /root/Data/NASDAQ/A1Sheet
-          subPath: Data/NASDAQ/A1Sheet
-        - name: data-vol
-          mountPath: /root/Data/NASDAQ/B1Sheet
-          subPath: Data/NASDAQ/B1Sheet
-        # NYSE
-        - name: data-vol
-          mountPath: /root/Data/NYSE/A1Sheet
-          subPath: Data/NYSE/A1Sheet
-        - name: data-vol
-          mountPath: /root/Data/NYSE/B1Sheet
-          subPath: Data/NYSE/B1Sheet
+          mountPath: /root/Data
+          subPath: Data
         # MarketList
         - name: data-vol
           mountPath: /root/market
