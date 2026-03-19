@@ -31,23 +31,23 @@ def send_csv_files():
         print(f"[{label}] 디렉토리 스캔 중: {dir_path}")
         
         for file_name in os.listdir(dir_path):
-            if file_name.lower().endswith('.csv'):
-                file_path = os.path.join(dir_path, file_name)
+            # if file_name.lower().endswith('.csv'):
+            file_path = os.path.join(dir_path, file_name)
+            
+            try:
+                with open(file_path, 'rb') as f:
+                    file_data = f.read()
                 
-                try:
-                    with open(file_path, 'rb') as f:
-                        file_data = f.read()
-                    
-                    # headers에 'label' 정보를 담아서 전송합니다.
-                    producer.send(
-                        TOPIC_NAME, 
-                        key=file_name.encode('utf-8'), 
-                        value=file_data,
-                        headers=[('label', label.encode('utf-8'))] # 라벨 추가
-                    )
-                    print(f"전송 완료: {label} -> {file_name} ({len(file_data)} bytes)")
-                except Exception as e:
-                    print(f"전송 실패: {file_name}, 에러: {e}")
+                # headers에 'label' 정보를 담아서 전송합니다.
+                producer.send(
+                    TOPIC_NAME, 
+                    key=file_name.encode('utf-8'), 
+                    value=file_data,
+                    headers=[('label', label.encode('utf-8'))] # 라벨 추가
+                )
+                print(f"전송 완료: {label} -> {file_name} ({len(file_data)} bytes)")
+            except Exception as e:
+                print(f"전송 실패: {file_name}, 에러: {e}")
 
     producer.flush()
     print("모든 CSV 파일 전송 시도가 완료되었습니다.")
