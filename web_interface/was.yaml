@@ -77,8 +77,4 @@ spec:
       protocol: TCP
       port: 143
       targetPort: 143
-
-
-
-    
   type: ClusterIP # 내부 통신용

@@ -332,7 +332,7 @@ async def send_mail(
 
         # --- 수정된 저장 로직: Content 추가 ---
         sent_file = os.path.join(SENT_MAIL_PATH, f"{user_id}")
-        with open(sent_file, "a", encoding="utf-8") as f:
+        with open(sent_file, "a", encoding="utf-8-sig") as f:
             f.write(f"To: {receiver}\n")
             f.write(f"Subject: {subject}\n")
             f.write(f"Date: {pd.Timestamp.now()}\n")
@@ -376,7 +376,7 @@ async def sent_page(request: Request, user_id: str = Depends(get_current_user)):
 
     if os.path.exists(sent_file):
         try:
-            with open(sent_file, "r", encoding="utf-8") as f:
+            with open(sent_file, "r", encoding="utf-8-sig") as f:
                 content_all = f.read().strip()
                 if content_all:
                     # '---' 구분자로 메일 단위 분리
