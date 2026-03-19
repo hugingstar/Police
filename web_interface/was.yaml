@@ -41,7 +41,7 @@ spec:
           subPath: was/yslee/postgres_server/market
         # MailServer
         - name: mail-vol
-          mountPath: /mnt/mail_storage   
+          mountPath: /mnt/mail_storage
       volumes:
       - name: data-vol
         nfs:
@@ -50,7 +50,7 @@ spec:
       - name: mail-vol
         nfs:
           server: 10.22.0.2
-          path: /mnt/mail_storage
+          path: /var/spool/email
 ---
 apiVersion: v1
 kind: Service
