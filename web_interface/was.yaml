@@ -25,32 +25,27 @@ spec:
         ports:
         - containerPort: 8000
         volumeMounts:
-        - name: dynamic-vol
+        - name: data-vol
           mountPath: /usr/share/nginx/html
-        - name: mail-vol
-          mountPath: /mnt/mail_storage
+          subPath: was/yslee/web_interface
         - name: data-vol
           mountPath: /root/Data
-        - name: market-vol
+          subPath: Data
+        - name: data-vol
           mountPath: /root/market
+          subPath: was/yslee/postgres_server/market
+        - name: mail-vol
+          mountPath: /mnt/mail_storage
           
       volumes:
-      - name: dynamic-vol
-        nfs: 
-          server: 10.15.0.170
-          path: /root/nfs_node/was/yslee/web_interface
-      - name: mail-vol
-        nfs:
-          server: 10.22.0.2
-          path: /mnt/mail_storage
       - name: data-vol
         nfs:
           server: 10.15.0.170
           path: /root/nfs_node/Data
-      - name: market-vol
+      - name: mail-vol
         nfs:
-          server: 10.15.0.170
-          path: /root/nfs_node/was/yslee/postgres_server/market
+          server: 10.22.0.2
+          path: /mnt/mail_storage
 ---
 apiVersion: v1
 kind: Service
