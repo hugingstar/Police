@@ -29,8 +29,9 @@ spec:
         - name: data-vol
           mountPath: /usr/share/nginx/html
           subPath: was/yslee/web_interface
-        - name: app-vol
+        - name: data-vol
           mountPath: /root/Data
+          subPath: Data
         # MarketList
         - name: data-vol
           mountPath: /root/market
@@ -43,10 +44,6 @@ spec:
         nfs:
           server: 10.15.0.170
           path: /root/nfs_node
-      - name: app-vol
-        nfs:
-          server: 10.17.0.2
-          path: /root/Data
       - name: mail-vol
         nfs:
           server: 10.22.0.2
