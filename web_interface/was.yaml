@@ -50,7 +50,7 @@ spec:
       - name: mail-vol
         nfs:
           server: 10.22.0.2
-          path: /var/spool/email
+          path: /var/spool/mail
 ---
 apiVersion: v1
 kind: Service
