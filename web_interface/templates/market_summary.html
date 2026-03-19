@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Kojel Private Equity Fund</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        /* [공통 디자인] stock.html과 통일 */
+        body { 
+            font-family: 'Segoe UI', sans-serif; 
+            margin: 0; 
+            display: flex; 
+            background-color: #f4f7f6; 
+            min-height: 100vh; 
+            font-size: 18px; 
+        }
+        
+        /* 사이드바 스타일 */
+        .sidebar { width: 250px; background-color: #8E86DB; color: white; padding-top: 30px; position: fixed; height: 100%; z-index: 100; }
+        .sidebar h2 { text-align: center; font-size: 1.2em; margin-bottom: 30px; color: #ecf0f1; }
+        .sidebar a { display: block; padding: 15px 25px; color: #bdc3c7; text-decoration: none; transition: 0.3s; border-left: 4px solid transparent; }
+        .sidebar a:hover { background-color: #695fd3; color: white; }
+        .sidebar a.active { background-color: #695fd3; color: white; border-left: 4px solid #695fd3; }
+
+        /* 메인 콘텐츠 영역 */
+        .main-content { margin-left: 250px; flex-grow: 1; padding: 40px; padding-top: 80px; width: calc(100% - 250px); }
+        .top-bar { position: fixed; top: 0; right: 0; left: 250px; height: 60px; background-color: white; display: flex; justify-content: flex-end; align-items: center; padding: 0 30px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); z-index: 90; }
+        .user-info { margin-right: 20px; font-weight: bold; }
+
+        /* 검색창 디자인 (stock.html 상속) */
+        .search-container { background: white; padding: 25px; border-radius: 15px; margin-bottom: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; justify-content: center; }
+        .search-form { display: flex; gap: 20px; align-items: center; }
+        input[type="date"] { padding: 12px 15px; border: 1px solid #ddd; border-radius: 10px; font-size: 17px; background: #fdfdfd; outline: none; }
+        .submit-btn { padding: 12px 35px; background: #695fd3; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 17px; }
+        .submit-btn:hover { background: #564db8; transform: translateY(-2px); }
+
+        /* 그리드 대시보드 레이아웃 */
+        .grid-container { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 30px; 
+            margin-top: 10px;
+        }
+        
+        .chart-card { 
+            background: white; 
+            border-radius: 20px; 
+            padding: 30px; 
+            box-shadow: 0 4px 25px rgba(0,0,0,0.08); 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            min-height: 400px;
+        }
+        
+        .chart-title { 
+            font-weight: bold; 
+            font-size: 1.4em; 
+            color: #2d3748; 
+            margin-bottom: 20px; 
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chart-id { width: 100%; height: 320px; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>Kojel securities</h2>
+        <a href="/login">로그인</a>
+        <a href="/users">커뮤니티</a>
+        <a href="/stock">시장 모니터링</a>
+        <a href="/market-summary" class="active">전체 시장 브리핑</a>
+        <a href="/mail">메일 발송</a>
+        <a href="/inbox">수신함</a>
+        <a href="/sent">발신함</a>
+        <a href="/delete">회원 탈퇴</a>
+    </div>
+
+    <div class="top-bar">
+        <div class="user-info"><b>{{ email }}</b>님 접속 중</div>
+        <a href="/logout" style="color:#e74c3c; text-decoration:none; font-weight:bold;">로그아웃</a>
+    </div>
+
+    <div class="main-content">
+        <h2 style="margin-bottom:30px; color:#1a202c;">🌐 글로벌 시장 센티먼트 요약</h2>
+
+        <div class="search-container">
+            <form action="/market-summary" method="POST" class="search-form">
+                <div style="display:flex; flex-direction:column; gap:5px;">
+                    <label style="font-size: 0.9em; color: #777; font-weight: bold;">기준 날짜 조회</label>
+                    <input type="date" name="target_date" value="{{ selected_date }}" required>
+                </div>
+                <button type="submit" class="submit-btn" style="height: 52px; align-self: flex-end;">데이터 갱신</button>
+            </form>
+        </div>
+
+        <div class="grid-container">
+            <div class="chart-card">
+                <div class="chart-title"><span>🇰🇷</span> KOSPI</div>
+                <div id="chart_KOSPI" class="chart-id"></div>
+            </div>
+            <div class="chart-card">
+                <div class="chart-title"><span>🇺🇸</span> NASDAQ</div>
+                <div id="chart_NASDAQ" class="chart-id"></div>
+            </div>
+            <div class="chart-card">
+                <div class="chart-title"><span>🇰🇷</span> KOSDAQ</div>
+                <div id="chart_KOSDAQ" class="chart-id"></div>
+            </div>
+            <div class="chart-card">
+                <div class="chart-title"><span>🇺🇸</span> NYSE</div>
+                <div id="chart_NYSE" class="chart-id"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 백엔드에서 넘겨준 JSON 데이터 파싱
+        const allCounts = JSON.parse('{{ all_counts | safe }}');
+        // Bull, Bear, Sell 색상 테마 통일
+        const colors = ['#ff4b2b', '#2193b0', '#f1c40f']; 
+
+        function drawChart(marketId) {
+            const dataObj = allCounts[marketId] || {bull: 0, bear: 0, sell: 0};
+            
+            const data = [{
+                values: [dataObj.bull, dataObj.bear, dataObj.sell],
+                labels: ['Bull', 'Bear', 'Sell'],
+                type: 'pie',
+                hole: .45,
+                marker: { colors: colors },
+                textinfo: 'label+percent',
+                textfont: { size: 16, color: '#333' },
+                hoverinfo: 'label+value+percent'
+            }];
+
+            const layout = {
+                autosize: true,
+                margin: { t: 20, b: 40, l: 20, r: 20 },
+                showlegend: true,
+                legend: { 
+                    orientation: "h", 
+                    x: 0.5, 
+                    xanchor: "center", 
+                    y: -0.1,
+                    font: { size: 14 }
+                }
+            };
+
+            Plotly.newPlot(`chart_${marketId}`, data, layout, {responsive: true, displayModeBar: false});
+        }
+
+        // 페이지 로드 시 차트 렌더링
+        window.onload = () => {
+            ["KOSPI", "KOSDAQ", "NASDAQ", "NYSE"].forEach(m => drawChart(m));
+        };
+    </script>
+</body>
+</html>

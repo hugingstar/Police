@@ -84,6 +84,23 @@ def get_current_user(user_id: Optional[str] = Cookie(None)):
     """쿠키에서 user_id를 읽어 로그인 여부 확인"""
     return user_id
 
+def fetch_market_counts(target_date: str, markets: List[str]):
+    """모든 시장의 bull/bear/sell 데이터 개수를 집계하는 공통 함수"""
+    all_data = {}
+    for m in markets:
+        folder_path = os.path.join(DATA_ROOT_DIR, m, "B1Sheet", target_date)
+        counts = {"bull": 0, "bear": 0, "sell": 0}
+        for key in counts.keys():
+            file_path = os.path.join(folder_path, f"df_{key}.csv")
+            if os.path.exists(file_path):
+                try:
+                    df = pd.read_csv(file_path, encoding='utf-8-sig')
+                    counts[key] = len(df)
+                except:
+                    counts[key] = 0
+        all_data[m] = counts
+    return all_data
+
 # *********************************************************************
 # Front-end / Auth Routes
 # =====================================================================
@@ -244,6 +261,45 @@ async def get_stock_detail(market: str, name: str):
         return df.tail(60).iloc[::-1].to_dict(orient='records')
     except Exception as e:
         return JSONResponse({"error": str(e)}, status_code=500)
+
+@api_router.get("/market-summary", response_class=HTMLResponse)
+async def market_summary_get(request: Request, user_id: str = Depends(get_current_user)):
+    # 로그인 체크
+    if not user_id:
+        return RedirectResponse(url="/login?msg=" + quote("로그인이 필요합니다."), status_code=303)
+    
+    target_date = date.today().isoformat()
+    all_counts = fetch_market_counts(target_date, MARKETS)
+    
+    return templates.TemplateResponse("market_summary.html", {
+        "request": request, 
+        "user_id": user_id, 
+        "email": f"{user_id}{allowed_domain}",
+        "all_counts": json.dumps(all_counts), 
+        "selected_date": target_date,
+        "markets": MARKETS
+    })
+
+@api_router.post("/market-summary", response_class=HTMLResponse)
+async def market_summary_post(
+    request: Request, 
+    target_date: str = Form(...), 
+    user_id: str = Depends(get_current_user)
+):
+    # 로그인 체크
+    if not user_id:
+        return RedirectResponse(url="/login", status_code=303)
+    
+    all_counts = fetch_market_counts(target_date, MARKETS)
+    
+    return templates.TemplateResponse("market_summary.html", {
+        "request": request, 
+        "user_id": user_id, 
+        "email": f"{user_id}{allowed_domain}",
+        "all_counts": json.dumps(all_counts), 
+        "selected_date": target_date,
+        "markets": MARKETS
+    })
 
 @api_router.get("/users", response_class=HTMLResponse)
 async def list_users(
