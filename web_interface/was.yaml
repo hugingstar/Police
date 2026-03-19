@@ -24,6 +24,9 @@ spec:
             uvicorn main:app --host 0.0.0.0 --port 8000 --workers 2
         ports:
         - containerPort: 8000
+        - containerPort: 25
+        - containerPort: 110
+        - containerPort: 143
         volumeMounts:
         # nginx
         - name: data-vol
@@ -62,4 +65,20 @@ spec:
       protocol: TCP
       port: 8000       # 서비스 포트
       targetPort: 8000 # 컨테이너 포트
+    - name: smtp          # 메일 송신용
+      protocol: TCP
+      port: 25
+      targetPort: 25
+    - name: pop3          # 메일 수신용(다운로드)
+      protocol: TCP
+      port: 110
+      targetPort: 110
+    - name: imap          # 메일 수신용(동기화)
+      protocol: TCP
+      port: 143
+      targetPort: 143
+
+
+
+    
   type: ClusterIP # 내부 통신용
