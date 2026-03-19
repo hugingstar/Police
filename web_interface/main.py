@@ -19,8 +19,7 @@ import json
 app = FastAPI(title="Kojel Private equity Fund")
 api_router = APIRouter() # APIRouter 적용
 # 컨테이너 내부 경로를 입력
-base_dir = "/usr/share/nginx/html"
-templates = Jinja2Templates(directory=os.path.join(base_dir, "templates"))
+templates = Jinja2Templates(directory="/usr/share/nginx/html/templates")
 
 """
 Setting zone
@@ -333,7 +332,7 @@ async def send_mail(
 
         # --- 수정된 저장 로직: Content 추가 ---
         sent_file = os.path.join(SENT_MAIL_PATH, f"{user_id}")
-        with open(sent_file, "a", encoding="utf-8-sig") as f:
+        with open(sent_file, "a", encoding="utf-8") as f:
             f.write(f"To: {receiver}\n")
             f.write(f"Subject: {subject}\n")
             f.write(f"Date: {pd.Timestamp.now()}\n")
@@ -377,7 +376,7 @@ async def sent_page(request: Request, user_id: str = Depends(get_current_user)):
 
     if os.path.exists(sent_file):
         try:
-            with open(sent_file, "r", encoding="utf-8-sig") as f:
+            with open(sent_file, "r", encoding="utf-8") as f:
                 content_all = f.read().strip()
                 if content_all:
                     # '---' 구분자로 메일 단위 분리
@@ -432,11 +431,14 @@ async def delete_user(
     emp_number: str = Form(...)):
     if not user_id_cookie:
         return RedirectResponse(url="/login?msg=로그인이 필요합니다.", status_code=303)
+    mail_handler = UserMAILHandler(**MAIL_CONFIG)
+    
     # 메일 서버에 계정 삭제 요청 먼저 수행
-    mail_success = del_to_mail_server(user_id, password)
+    mail_success = mail_handler.del_mail_user(user_id, password)
     if not mail_success:
-        # 메일 생성이 실패하면 DB에 넣지 않고 즉시 리턴
-        return RedirectResponse(url="/?msg=삭제 실패!", status_code=303)
+        # 메일 삭제이 실패하면 DB에서 빼지 않고 즉시 리턴
+        message = quote("삭제 실패!")
+        return RedirectResponse(url=f"/?msg={message}", status_code=303)
 
     if mail_success:
         db_handler = UserDBHandler(**DB_CONFIG, inputData=(user_id, password, emp_number))
@@ -455,7 +457,7 @@ async def logout():
     response.delete_cookie(key="user_id")
     return response
 
-app.include_router(api_router)
+app.include_router(api_router, prefix="/api")
 
 if __name__ == "__main__":
     import uvicorn
