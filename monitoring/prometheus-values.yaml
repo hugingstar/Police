@@ -1,4 +1,3 @@
-# Set NodePort
 grafana:  
   persistence:
     enabled: true
@@ -24,7 +23,7 @@ prometheus:
     volumes:
       - name: exporter-targets
         persistentVolumeClaim:
-          claimName: nfs-pvc-monitoring
+          claimName: nfs-pvc-monitoring-prometheus 
     volumeMounts:
       - name: exporter-targets
         mountPath: /etc/prometheus/export-node-targets

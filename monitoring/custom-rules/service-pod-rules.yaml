@@ -1,0 +1,92 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: pod-custom-rules
+  namespace: monitoring
+  labels:
+    release: prometheus # 현재 사용 중인 Helm Release 라벨과 일치해야 함
+spec:
+  groups:
+  - name: common-alerts
+    rules:
+    - alert: k8sPodNotRunning
+      expr: kube_pod_status_phase{phase=~"Pending|Unknown|Failed"} == 1
+      for: 3m
+      labels:
+        severity: warning
+        alert_destination: slack
+      annotations:
+        summary: "pod Not Running: {{ $labels.pod }}"
+        description: "{{ $labels.namespace }} ({{ $labels.pod }}) 파드가 1분 이상 Running 상태가 아닙니다."
+    - alert: k8sNodeDiskPressure
+      expr: kube_node_status_condition{condition="DiskPressure", status="true"} == 1
+      for: 1m
+      labels:
+        severity: critical
+        alert_destination: slack
+      annotations:
+        summary: "Node Disk Pressure: {{ $labels.node }}"
+        description: "워커 노드 {{ $labels.node }}의 디스크 용량이 부족하여 파드 배포가 제한될 수 있습니다."
+  - name: web-alerts
+    rules:
+    - alert: WebHighNetworkTraffic
+      expr: rate(container_network_receive_bytes_total{namespace="web"}[1m]) > 500000
+      for: 2m
+      labels:
+        severity: warning
+        alert_destination: slack
+      annotations:
+        summary: "High Network Traffic: {{ $labels.pod }}"
+        description: "현재 수신 속도: {{ $value | humanize1024 }}B/s (임계치 500KB/s 초과)"
+  - name: was-alerts
+    rules:
+    - alert: WasRequestFailure
+      expr: rate(http_requests_total{namespace="was", status=~"5.."}[1m]) > 0
+      for: 1m
+      labels:
+        severity: critical
+        alert_destination: slack
+      annotations:
+        summary: "WAS Service Error (5xx)"
+        description: "WAS에서 500번대 에러가 발생하고 있습니다. 사용자가 서비스를 이용할 수 없는 상태일 수 있습니다."
+    - alert: WasResponseSilent
+      expr: |
+        rate(container_network_receive_bytes_total{namespace="was"}[5m]) > 100
+        and
+        rate(container_network_transmit_bytes_total{namespace="was"}[5m]) < 1
+      for: 5m
+      labels:
+        severity: critical
+        alert_destination: slack
+      annotations:
+        summary: "WAS Response Silent: {{ $labels.pod }}"
+        description: "{{ $labels.pod }} 파드가 요청을 받고 있지만 응답을 내보내지 못하고 있습니다. 애플리케이션 데드락이나 커넥션 풀 고갈이 의심됩니다."
+  - name: db-alerts
+    rules:
+    - alert: DBTooManyConnections
+      expr: mysql_global_status_threads_connected > 100
+      for: 2m
+      labels:
+        severity: warning
+        alert_destination: slack
+      annotations:
+        summary: "DB Too Many Connections"
+        description: "현재 DB 연결 수가 100개를 초과했습니다. WAS의 요청이 대기 중일 수 있습니다."
+    - alert: DBConnectionFailed
+      expr: mysql_up{namespace="db"} == 0
+      for: 1m
+      labels:
+        severity: critical
+        alert_destination: slack
+      annotations:
+        summary: "DB Connection Refused"
+        description: "WAS에서 DB로의 연결이 거부되었습니다. DB 파드 상태와 네트워크 정책을 확인하세요."
+    - alert: DBHighLatency
+      expr: rate(mysql_global_status_queries_slow_total[1m]) > 0
+      for: 2m
+      labels:
+        severity: warning
+        alert_destination: slack
+      annotations:
+        summary: "DB Slow Queries Detected"
+        description: "DB에서 슬로우 쿼리가 발생하고 있습니다. 인덱스 설정이나 쿼리 최적화가 필요할 수 있습니다."

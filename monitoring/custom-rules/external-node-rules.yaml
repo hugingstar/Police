@@ -1,0 +1,38 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: external-custom-rules
+  namespace: monitoring
+  labels:
+    release: prometheus # 현재 사용 중인 Helm Release 라벨과 일치해야 함
+spec:
+  groups:
+  - name: external-infrastructure-alerts
+    rules:
+    - alert: ExternalServerDown
+      expr: up{job=~"external-.*"} == 0
+      for: 1m
+      labels:
+        severity: critical
+        alert_destination: slack
+      annotations:
+        summary: "Instance Down: {{ $labels.instance }}"
+        description: "외부 서버 {{ $labels.instance }} ({{ $labels.job }})의 연결이 1분 이상 끊어졌습니다."
+    - alert: ExternalServerDiskFull
+      expr: (node_filesystem_avail_bytes{job=~"external-.*", mountpoint="/"} / node_filesystem_size_bytes{job=~"external-.*", mountpoint="/"}) * 100 < 10
+      for: 2m
+      labels:
+        severity: warning
+        alert_destination: slack
+      annotations:
+        summary: "Low Disk Space: {{ $labels.instance }}"
+        description: "{{ $labels.instance }} 서버의 루트 파티션 잔여 용량이 10% 미만입니다. (현재: {{ $value | printf \"%.2f\" }}%)"
+    - alert: ExternalServerHighMemory
+      expr: (1 - (node_memory_MemAvailable_bytes{job=~"external-.*"} / node_memory_MemTotal_bytes{job=~"external-.*"})) * 100 > 90
+      for: 5m
+      labels:
+        severity: warning
+        alert_destination: slack
+      annotations:
+        summary: "High Meomry Usage: {{ $labels.instance }}"
+        description: "{{ $labels.instance }} 서버의 메모리 사용량이 90%를 초과했습니다."
