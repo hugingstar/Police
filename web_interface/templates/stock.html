@@ -3,48 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <title>Kojel Private Equity Fund</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; display: flex; background-color: #f4f7f6; min-height: 100vh; }
+        /* 사이드바 스타일 */
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; background-color: #f4f7f6; min-height: 100vh; font-size: 18px; }
         .sidebar { width: 250px; background-color: #8E86DB; color: white; padding-top: 30px; position: fixed; height: 100%; z-index: 100; }
         .sidebar h2 { text-align: center; font-size: 1.2em; margin-bottom: 30px; color: #ecf0f1; }
         .sidebar a { display: block; padding: 15px 25px; color: #bdc3c7; text-decoration: none; transition: 0.3s; border-left: 4px solid transparent; }
         .sidebar a:hover { background-color: #695fd3; color: white; }
         .sidebar a.active { background-color: #695fd3; color: white; border-left: 4px solid #695fd3; }
         
-        /* 상단 바 공간 확보를 위해 padding-top 추가 */
-        .main-content { margin-left: 250px; flex-grow: 1; padding: 50px; padding-top: 80px; }
-        .container { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        h2.page-title { color: #333; margin-top: 0; }
+        .main-content { margin-left: 250px; flex-grow: 1; padding: 40px; padding-top: 80px; width: calc(100% - 250px); }
+        .top-bar { position: fixed; top: 0; right: 0; left: 250px; height: 60px; background-color: white; display: flex; justify-content: flex-end; align-items: center; padding: 0 30px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); z-index: 90; }
+        .user-info { margin-right: 20px; font-weight: bold; }
+        
+        /* 검색창 디자인 */
+        .search-container { background: white; padding: 25px; border-radius: 15px; margin-bottom: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; justify-content: center; }
+        .search-form { display: flex; gap: 20px; align-items: center; }
+        .input-group { display: flex; flex-direction: column; gap: 5px; }
+        .input-group label { font-size: 0.9em; color: #777; font-weight: bold; }
+        input[type="date"], select { padding: 12px 15px; border: 1px solid #ddd; border-radius: 10px; font-size: 17px; background: #fdfdfd; outline: none; }
+        .submit-btn { padding: 12px 35px; background: #695fd3; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 17px; height: 52px; align-self: flex-end; }
+        .submit-btn:hover { background: #564db8; transform: translateY(-2px); }
 
-        /* --- 로그아웃 상단 바 스타일 추가 --- */
-        .top-bar {
-            position: fixed; top: 0; right: 0; left: 250px; height: 60px;
-            background-color: white; display: flex; justify-content: flex-end;
-            align-items: center; padding: 0 30px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); z-index: 90;
+        /* 대시보드 레이아웃 높이 고정 */
+        .dashboard-row { 
+            display: flex; 
+            gap: 30px; 
+            margin-bottom: 30px; 
+            height: 650px; 
         }
-        .user-info { margin-right: 20px; font-size: 0.9em; color: #555; }
-        .user-id { font-weight: bold; color: #2c3e50; }
-        .logout-btn {
-            padding: 8px 16px;
-            background-color: #e74c3c;
-            color: white;
-            text-decoration: none;
-            border-radius: 4px;
-            font-size: 0.85em;
-            transition: background 0.3s;
+        
+        /* 파이 차트 박스 */
+        .pie-box { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 20px; 
+            box-shadow: 0 4px 25px rgba(0,0,0,0.08); 
+            flex: 1.2; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center;      
+            justify-content: center;  
+            overflow: hidden;
         }
-        .logout-btn:hover { background-color: #c0392b; }
+        
+        #pieChart { width: 100%; height: 100%; }
 
+        /* 요약 리스트 박스 */
+        .list-box { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 20px; 
+            box-shadow: 0 4px 25px rgba(0,0,0,0.08); 
+            flex: 1; display: flex; flex-direction: column; overflow: hidden;
+        }
 
-        /* 주식 페이지 전용 스타일 */
-        .search-box { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .table-section { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
-        .nav-tabs { display: flex; border-bottom: 2px solid #ddd; margin-bottom: 15px; }
-        .nav-link { padding: 10px 20px; cursor: pointer; border: none; background: none; font-weight: bold; color: #666; }
-        .nav-link.active { color: #695fd3; border-bottom: 3px solid #695fd3; }
-        .table { width: 100%; border-collapse: collapse; font-size: 0.85em; }
-        .badge { padding: 4px 8px; border-radius: 4px; color: white; font-size: 0.8em; margin-left: 5px; }
-        .bg-bull { background-color: #e74c3c; } .bg-bear { background-color: #3498db; } .bg-sell { background-color: #f1c40f; }
+        .btn-group { display: flex; width: 100%; gap: 10px; margin-bottom: 20px; }
+        .tab-btn { flex: 1; padding: 15px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 16px; color: white; opacity: 0.75; }
+        .tab-btn.active { opacity: 1; box-shadow: 0 4px 12px rgba(0,0,0,0.15); transform: translateY(-2px); }
+        .btn-bull { background: #ff4b2b; } .btn-bear { background: #2193b0; } .btn-sell { background: #f1c40f; }
+
+        /* 요약 표 스크롤 */
+        .table-wrapper { width: 100%; overflow-y: auto; border: 1px solid #f0f0f0; border-radius: 12px; flex-grow: 1; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #f9fafb; padding: 18px; border-bottom: 2px solid #eee; text-align: center !important; font-size: 16px; position: sticky; top: 0; z-index: 10; }
+        td { padding: 15px; border-bottom: 1px solid #f0f0f0; text-align: right; }
+        tr.clickable:hover { background-color: #f8f7ff; cursor: pointer; }
+
+        /* 상세 리포트 섹션 */
+        .detail-box { background: white; padding: 35px; border-radius: 20px; box-shadow: 0 4px 30px rgba(0,0,0,0.1); margin-top: 10px; display: none; }
+        .filter-group { display: flex; flex-wrap: wrap; gap: 15px; background: #f9f9fb; padding: 20px; border-radius: 12px; border: 1px solid #eee; margin-bottom: 25px; }
+        .filter-group label { display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 600; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -60,55 +90,151 @@
     </div>
 
     <div class="top-bar">
-        <div class="user-info">
-            <span class="user-id">{{ email }}</span>님 접속 중
-        </div>
-        <a href="/logout" class="logout-btn">로그아웃</a>
+        <div class="user-info"><b>{{ email }}</b>님 접속 중</div>
+        <a href="/logout" style="color:#e74c3c; text-decoration:none; font-weight:bold;">로그아웃</a>
     </div>
 
     <div class="main-content">
-        <h2 class="page-title">📈 일일 시장 과열 분석</h2>
-        
-        <div class="search-box">
-            <form action="/stock" method="POST">
-                <div style="display: flex; gap: 15px; align-items: flex-end;">
-                    <div>
-                        <label>날짜 선택</label><br>
-                        <input type="date" name="target_date" value="{{ selected_date }}" required>
-                    </div>
-                    <div>
-                        <label>시장 선택</label><br>
-                        <select name="market">
-                            {% for m in markets %}
-                            <option value="{{ m }}" {% if m == selected_market %}selected{% endif %}>{{ m }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <button type="submit" style="background:#059669; color:white; border:none; padding:8px 20px; border-radius:4px; cursor:pointer;">데이터 조회</button>
+        <h2 style="margin-bottom:30px; color:#1a202c;">📊 전략적 시장 데이터 분석 센터</h2>
+
+        <div class="search-container">
+            <form action="/stock" method="POST" class="search-form">
+                <div class="input-group">
+                    <label>기준 날짜</label>
+                    <input type="date" name="target_date" value="{{ selected_date }}" required>
                 </div>
+                <div class="input-group">
+                    <label>분석 시장</label>
+                    <select name="market" id="market_select">
+                        {% for m in markets %}
+                        <option value="{{ m }}" {% if m == selected_market %}selected{% endif %}>{{ m }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="submit-btn">데이터 분석 실행</button>
             </form>
         </div>
 
-        <div class="table-section">
-            <div class="nav-tabs">
-                <button class="nav-link active" onclick="showTab('bull')">Bull <span class="badge bg-bull">{{ counts.bull }}</span></button>
-                <button class="nav-link" onclick="showTab('bear')">Bear <span class="badge bg-bear">{{ counts.bear }}</span></button>
-                <button class="nav-link" onclick="showTab('sell')">Sell <span class="badge bg-sell">{{ counts.sell }}</span></button>
+        <div class="dashboard-row">
+            <div class="pie-box">
+                <h3 style="margin-bottom: 10px; color: #444; font-size: 1.4em;">🎯 시장 감정 비율</h3>
+                <div id="pieChart"></div>
             </div>
 
-            <div id="bull" class="tab-content">{{ tables.bull | safe if tables.bull else "검색 결과가 없습니다." }}</div>
-            <div id="bear" class="tab-content" style="display:none;">{{ tables.bear | safe if tables.bear else "검색 결과가 없습니다." }}</div>
-            <div id="sell" class="tab-content" style="display:none;">{{ tables.sell | safe if tables.sell else "검색 결과가 없습니다." }}</div>
+            <div class="list-box">
+                <div class="btn-group">
+                    <button class="tab-btn btn-bull active" onclick="updateSummary('bull')">Bull ({{ counts.bull }})</button>
+                    <button class="tab-btn btn-bear" onclick="updateSummary('bear')">Bear ({{ counts.bear }})</button>
+                    <button class="tab-btn btn-sell" onclick="updateSummary('sell')">Sell ({{ counts.sell }})</button>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th class="text-center">종목명</th><th>현재가</th><th>거래량</th></tr>
+                        </thead>
+                        <tbody id="summaryBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="detail-box" id="detailContainer">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h3 id="detailTitle" style="margin:0; font-size: 1.4em; color:#2d3748;"></h3>
+                <div id="linkArea"></div>
+            </div>
+            <div class="filter-group">
+                <b style="width:100%; margin-bottom:12px; color:#555;">조회 컬럼 (최근 2개월, 최신순):</b>
+                {% for key, label in column_labels.items() %}
+                <label><input type="checkbox" class="col-toggle" value="{{ key }}" checked onchange="renderDetailTable()"> {{ label }}</label>
+                {% endfor %}
+            </div>
+            <div style="overflow-x: auto; border: 1px solid #edf2f7; border-radius: 12px;">
+                <table id="detailTable">
+                    <thead id="detailHead"></thead>
+                    <tbody id="detailBody"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
     <script>
-        function showTab(tabName) {
-            document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
-            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-            document.getElementById(tabName).style.display = 'block';
-            event.currentTarget.classList.add('active');
+        const rawData = JSON.parse('{{ raw_data | safe }}');
+        const labelsMap = {{ column_labels | tojson }};
+        const market = "{{ selected_market }}";
+        const fmt = new Intl.NumberFormat('ko-KR');
+        let currentDetailData = [];
+
+        function renderPie() {
+            const counts = {{ counts | tojson }};
+            const data = [{
+                values: [counts.bull, counts.bear, counts.sell],
+                labels: ['Bull', 'Bear', 'Sell'],
+                type: 'pie',
+                hole: .45,
+                textinfo: 'label+percent',
+                textfont: { size: 18, color: '#333' },
+                marker: { colors: ['#ff4b2b', '#2193b0', '#f1c40f'] }
+            }];
+            const layout = {
+                autosize: true,
+                margin: {t:40, b:40, l:40, r:40},
+                showlegend: true,
+                legend: { orientation: "h", x: 0.5, xanchor: "center", y: -0.1, font: { size: 16 } }
+            };
+            Plotly.newPlot('pieChart', data, layout, {responsive: true});
         }
+
+        function updateSummary(type) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            if(event && event.target.classList.contains('tab-btn')) event.target.classList.add('active');
+            const tbody = document.getElementById('summaryBody');
+            tbody.innerHTML = '';
+            const list = rawData[type] || [];
+            list.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = 'clickable';
+                tr.onclick = () => fetchDetail(item.name);
+                tr.innerHTML = `<td style="text-align:center; font-weight:bold; color:#695fd3;">${item.name}</td><td>${fmt.format(item.close)}</td><td>${fmt.format(item.volume)}</td>`;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function fetchDetail(name) {
+            document.getElementById('detailContainer').style.display = 'block';
+            // 문구에 최신순 추가
+            document.getElementById('detailTitle').innerText = `📑 ${name} 상세 데이터 (최근 2개월, 최신순)`;
+            const res = await fetch(`/api/detail?market=${market}&name=${name}`);
+            currentDetailData = await res.json();
+            renderDetailTable();
+            window.scrollTo({ top: document.getElementById('detailContainer').offsetTop - 100, behavior: 'smooth' });
+        }
+
+        function renderDetailTable() {
+            if (!currentDetailData.length) return;
+            const selectedKeys = Array.from(document.querySelectorAll('.col-toggle:checked')).map(cb => cb.value);
+            const thead = document.getElementById('detailHead');
+            const tbody = document.getElementById('detailBody');
+
+            thead.innerHTML = `<tr>${selectedKeys.map(k => `<th>${labelsMap[k]}</th>`).join('')}</tr>`;
+            
+            tbody.innerHTML = currentDetailData.map(row => {
+                return `<tr>${selectedKeys.map(k => {
+                    const val = row[k];
+                    const isNumeric = typeof val === 'number' && k !== 'time_stamp';
+                    
+                    let style = "";
+                    if (k === 'RSI') {
+                        if (val >= 70) style = 'style="color: #ff4b2b; font-weight: bold;"';
+                        else if (val <= 30) style = 'style="color: #2193b0; font-weight: bold;"';
+                    }
+                    
+                    return `<td ${style}>${isNumeric ? fmt.format(val) : (val || '-')}</td>`;
+                }).join('')}</tr>`;
+            }).join('');
+        }
+
+        window.onload = () => { renderPie(); updateSummary('bull'); };
     </script>
 </body>
 </html>

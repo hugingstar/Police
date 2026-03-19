@@ -309,5 +309,5 @@ app.include_router(api_router)
 
 if __name__ == "__main__":
     import uvicorn
-    # 외부 접속 허용을 위해 0.0.0.0, 로컬은 127.0.0.1
+    # 외부 접속 허용(0.0.0.0), 로컬(127.0.0.1)
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
