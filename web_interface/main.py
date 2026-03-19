@@ -20,7 +20,7 @@ from MAIL_handler import UserMAILHandler
 app = FastAPI(title="Kojel Private equity Fund")
 api_router = APIRouter()
 # 컨테이너 환경 경로 유지
-templates = Jinja2Templates(directory="/usr/share/nginx/html/templates")
+templates = Jinja2Templates(directory="templates")
 
 """
 Setting zone
@@ -310,4 +310,4 @@ app.include_router(api_router)
 if __name__ == "__main__":
     import uvicorn
     # 외부 접속 허용(0.0.0.0), 로컬(127.0.0.1)
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
