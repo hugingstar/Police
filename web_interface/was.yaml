@@ -35,13 +35,12 @@ spec:
           mountPath: /root/market
           subPath: was/yslee/postgres_server/market
         - name: mail-vol
-          mountPath: /mnt/mail_storage
-          
+          mountPath: /mnt/mail_storage   
       volumes:
       - name: data-vol
         nfs:
           server: 10.15.0.170
-          path: /root/nfs_node/Data
+          path: /root/nfs_node
       - name: mail-vol
         nfs:
           server: 10.22.0.2
