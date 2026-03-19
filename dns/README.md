@@ -45,4 +45,5 @@ git pull origin jjh
 4. Zone 설정 자동 추가
 5. 도메인 레코드 파일(kojel.com.dns) 자동 생성
 6. DNS 설정
-7. 서비스 시작 및 자동 재시작 활성화
+7. /etc/hosts 파일에 도메인 강제 등록
+8. 서비스 시작 및 자동 재시작 활성화

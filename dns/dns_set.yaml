@@ -1,11 +1,12 @@
----
 - name: DNS 서버 완전 자동화 구축 
   hosts: dns_servers
   become: yes
   tasks:
     - name: 1. BIND 및 유틸리티 설치
       dnf:
-        name: bind and bind-utils
+        name: 
+          - bind
+          - bind-utils
         state: present
 
     - name: 2. 백업파일 생성
@@ -56,13 +57,23 @@
           ns1  IN A  10.22.0.3
           www  IN A  10.22.0.10
           mail IN A  10.22.0.2
-    - name: 6. DNS 설정
+
+    - name: 6. DNS 설정 (resolv.conf)
       copy:
         dest: /etc/resolv.conf
         content: |
           nameserver 127.0.0.1
 
-    - name: 7. 서비스 시작 및 자동 재시작 활성화
+    - name: 7. /etc/hosts 파일에 도메인 강제 등록
+      blockinfile:
+        path: /etc/hosts
+        block: |
+          10.22.0.10  kojel.com
+          10.22.0.10  www.kojel.com
+          10.22.0.2   mail.kojel.com
+        marker: "# {mark} ANSIBLE MANAGED KOJEL DOMAIN"
+
+    - name: 8. 서비스 시작 및 자동 재시작 활성화
       service:
         name: named
         state: restarted
