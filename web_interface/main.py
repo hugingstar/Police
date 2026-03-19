@@ -1,24 +1,25 @@
 from fastapi import FastAPI, Request, Form, Cookie, Depends, Query, APIRouter
 from urllib.parse import quote
 from fastapi.templating import Jinja2Templates
-from fastapi.responses import HTMLResponse, RedirectResponse, Response
+from fastapi.responses import HTMLResponse, RedirectResponse, Response, JSONResponse
 from typing import Optional, List
 import os
-from CRUD_handler import UserDBHandler
-from MAIL_handler import UserMAILHandler
 import re
 import pandas as pd
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+import json
 import smtplib
 from datetime import date
-import json
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.header import Header
 
+from CRUD_handler import UserDBHandler
+from MAIL_handler import UserMAILHandler
 
-# FastAPI
+# FastAPI 설정
 app = FastAPI(title="Kojel Private equity Fund")
-api_router = APIRouter() # APIRouter 적용
-# 컨테이너 내부 경로를 입력
+api_router = APIRouter()
+# 컨테이너 환경 경로 유지
 templates = Jinja2Templates(directory="/usr/share/nginx/html/templates")
 
 """
@@ -29,7 +30,6 @@ Setting zone
 allowed_domain = "@kojel.com"
 
 # NFS mount directory
-
 INBOX_BASE_PATH = "/mnt/mail_storage" 
 SENT_MAIL_PATH = "/mnt/mail_storage/sent_items"
 
@@ -38,24 +38,21 @@ try:
         os.makedirs(INBOX_BASE_PATH, exist_ok=True) 
     if not os.path.exists(SENT_MAIL_PATH):
         os.makedirs(SENT_MAIL_PATH, exist_ok=True) 
-
 except Exception as e:
-    sentence = f"[WAS server] INBOX/SENTBOX folder create error"
-    print(sentence)
+    print(f"[WAS server] INBOX/SENTBOX folder create error: {e}")
 
 # Mail server config
 MAIL_CONFIG = {
-    "MAIL_SERVER_IP" : "10.22.0.2",  # 실제 메일 서버 IP로 변경하세요
+    "MAIL_SERVER_IP" : "10.22.0.2",
     "MAIL_SEND_PORT" : 25,
     "MAIL_RECEIVE_PORT" : 110,
-    "MAIL_SERVER_PORT" : 9999,          # 메일 서버 수신 포트
+    "MAIL_SERVER_PORT" : 9999,
     "INBOX_BASE_PATH" : INBOX_BASE_PATH,
     "SENT_MAIL_PATH" : SENT_MAIL_PATH
 }
 
 # Database information
 DB_CONFIG = {
-
     "host": "mariadb-service.db.svc.cluster.local", 
     "port": 3306, 
     "user": "root", 
@@ -64,11 +61,22 @@ DB_CONFIG = {
     "tbl_name": "members"
 }
 
-# Monitoring
+# Monitoring & Stock Config
 DATA_ROOT_DIR = "/root/Data"
-STOCK_LIST_ROOT = "/root/market"
 MARKETS = ["KOSPI", "KOSDAQ", "NASDAQ", "NYSE"]
-ALL_COLUMNS = ["name", "open", "high", "low", "close", "volume", "RSI", "CCI", "MACD", "ADX", "Drawdown"] # 가독성을 위해 요약
+COLUMN_MAP = {
+    "time_stamp": "날짜/시간",
+    "open": "시가",
+    "high": "고가",
+    "low": "저가",
+    "close": "종가",
+    "volume": "거래량",
+    "close_diff_first": "전일대비",
+    "RSI": "RSI",
+    "Sell_Signal": "매도신호",
+    "RSI_BullDiv": "상승다이버전스",
+    "RSI_BearDiv": "하락다이버전스"
+}
 
 # *********************************************************************
 # Extra functions
@@ -77,18 +85,13 @@ def get_current_user(user_id: Optional[str] = Cookie(None)):
     return user_id
 
 # *********************************************************************
-#Front-end
+# Front-end / Auth Routes
 # =====================================================================
-
-# First main page
 
 @api_router.get("/", response_class=HTMLResponse)
-async def read_form(request: Request, 
-                    msg: str = None):
+async def read_form(request: Request, msg: str = None):
     return templates.TemplateResponse("login.html", {"request": request, "msg": msg})
-# =====================================================================
 
-# Login page
 @api_router.get("/login", response_class=HTMLResponse)
 async def login_form(request: Request, msg: str = None):
     return templates.TemplateResponse("login.html", {"request": request, "msg": msg})
@@ -99,7 +102,6 @@ async def login(user_id: str = Form(...), password: str = Form(...)):
     success, result = db_handler.verify_login(user_id, password)
     
     if success:
-        # result(사용자명)에 한글이 포함될 수 있으므로 quote로 감쌉니다.
         message = quote(f"{result}님, 환영합니다!")
         redirect_response = RedirectResponse(url=f"/users?msg={message}", status_code=303)
         redirect_response.set_cookie(key="user_id", value=user_id, httponly=True)
@@ -108,8 +110,15 @@ async def login(user_id: str = Form(...), password: str = Form(...)):
         error_msg = quote(str(result))
         return RedirectResponse(url=f"/login?msg={error_msg}", status_code=303)
 
+@api_router.get("/logout")
+async def logout():
+    message = quote("로그아웃 되었습니다.")
+    response = RedirectResponse(url=f"/login?msg={message}", status_code=303)
+    response.delete_cookie(key="user_id")
+    return response
+
 # =====================================================================
-# Insert page
+# User Management
 @api_router.get("/insert", response_class=HTMLResponse)
 async def insert_form(request: Request, msg: str = None):
     return templates.TemplateResponse("insert.html", {"request": request, "msg": msg})
@@ -119,36 +128,25 @@ async def create_user(
     user_id: str = Form(...), 
     password: str = Form(...),
     username: str = Form(...), 
-    email: str = Form(None),  # HTML에서 readonly로 넘어옴
+    email: str = Form(None), 
     birthday: str = Form(None), 
     age: int = Form(0),
     department: str = Form(None), 
     emp_number: str = Form(...)
 ):  
-
-    # 1. 이메일 강제 생성 (보안 강화)
-    # 프론트엔드에서 수정했을 가능성을 배제하고, 서버에서 user_id 기반으로 다시 만듭니다.
     generated_email = f"{user_id}{allowed_domain}"
-
-    # 만약 넘어온 email과 생성된 email이 다르다면 (비정상적인 접근 방지)
     if email and email != generated_email:
         message = "가입 실패: 이메일 형식이 올바르지 않습니다."
         return RedirectResponse(url=f"/insert?msg={message}", status_code=303)
 
-    # 2. 사번(Employee number) 형식 검증
-    emp_pattern = r"^C\d{6}$"
-    if not re.match(emp_pattern, emp_number):
+    if not re.match(r"^C\d{6}$", emp_number):
         message = "가입 실패: 인증번호는 'C'로 시작하는 7자리여야 합니다."
         return RedirectResponse(url=f"/insert?msg={message}", status_code=303)
 
-    # 3. 비밀번호 복잡도 검증
     password_pattern = r"^(?=.*[A-Z])(?=.*[a-z])(?=.*[!@#$%^&*(),.?\":{}|<>]).{8,}$"
     if not re.match(password_pattern, password):
         message = "가입 실패: 비밀번호 규정(대/소문자, 특수문자 포함 8자 이상)을 확인하세요."
         return RedirectResponse(url=f"/insert?msg={message}", status_code=303)
-
-    # 4. 메일 서버 계정 생성 및 DB 저장
-    message = "가입 실패: 알 수 없는 오류" # 초기 메시지 설정
 
     try:
         mail_handler = UserMAILHandler(**MAIL_CONFIG)
@@ -160,110 +158,27 @@ async def create_user(
             success, db_message = db_handler.execute_insert()
             message = db_message
         else:
-            message = "가입 실패: 메일 서버 통신 불가로 계정을 생성할 수 없습니다."
-            print(message)
+            message = "가입 실패: 메일 서버 통신 불가"
     except Exception as e:
-        message = f"가입 실패: 서버 오류 발생 ({str(e)})"
-        print(message)
-    # 결과 페이지로 리다이렉트
+        message = f"가입 실패: {str(e)}"
+    
     return RedirectResponse(url=f"/insert?msg={message}", status_code=303)
 
-# @api_router.get("/stock", response_class=HTMLResponse)
-# async def stock_main(request: Request, user_id: str = Depends(get_current_user)):
-#     if not user_id:
-#         return RedirectResponse(url="/login?msg=" + quote("로그인이 필요합니다."), status_code=303)
-    
-#     generated_email = f"{user_id}{allowed_domain}"
-    
-#     # [중요] 초기 진입 시에도 모든 변수를 빈 구조로 넘겨서 Jinja2 에러 방지
-#     return templates.TemplateResponse("stock.html", {
-#         "request": request,
-#         "user_id": user_id,
-#         "email": generated_email,
-#         "all_columns": ALL_COLUMNS,
-#         "markets": MARKETS,
-#         "tables": {"bull": "", "bear": "", "sell": ""},
-#         "counts": {"bull": 0, "bear": 0, "sell": 0}, 
-#         "chart_data": {"bull": [], "bear": [], "sell": []}, # JSON 직렬화 전 딕셔너리
-#         "selected_date": date.today().isoformat(),
-#         "selected_market": "KOSPI"
-#     })
-
-# @api_router.post("/stock", response_class=HTMLResponse)
-# async def search_stock_data(
-#     request: Request,
-#     target_date: str = Form(...),
-#     market: str = Form(...),
-#     selected_cols: List[str] = Form(None),
-#     user_id: str = Depends(get_current_user)
-# ):
-#     if not user_id:
-#         return RedirectResponse(url="/login?msg=" + quote("로그인이 필요합니다."), status_code=303)
-    
-#     generated_email = f"{user_id}{allowed_domain}"
-#     if not selected_cols: selected_cols = ["name", "open", "close", "volume", "RSI"]
-
-#     # (중략: stock_map 생성 로직 동일)
-
-#     folder_path = os.path.join(DATA_ROOT_DIR, market, "B1Sheet", target_date)
-#     data_types = {"bull": "df_bull", "bear": "df_bear", "sell": "df_sell"}
-    
-#     tables_html = {}
-#     counts = {"bull": 0, "bear": 0, "sell": 0}
-#     chart_data = {"bull": [], "bear": [], "sell": []}
-
-#     for key, filename_base in data_types.items():
-#         file_path = os.path.join(folder_path, f"{filename_base}.csv")
-#         if os.path.exists(file_path):
-#             try:
-#                 df = pd.read_csv(file_path, encoding='utf-8-sig')
-#                 # 전체 데이터를 저장 (나중에 JS에서 상세 보기용으로 사용)
-#                 chart_data[key] = df.fillna(0).to_dict(orient='records')
-                
-#                 valid_cols = [c for c in selected_cols if c in df.columns]
-#                 df_filtered = df[valid_cols].copy()
-#                 counts[key] = len(df_filtered)
-
-#                 # 종목명 링크 생성 (생략 가능하면 기존 로직 유지)
-#                 if 'name' in df_filtered.columns:
-#                     # (기존 네이버/야후 링크 생성 로직)
-#                     pass
-
-#                 tables_html[key] = df_filtered.to_html(classes="table table-hover table-bordered", index=False, escape=False)
-#             except Exception as e:
-#                 tables_html[key] = f"에러: {str(e)}"
-#         else:
-#             tables_html[key] = "데이터 없음"
-
-#     return templates.TemplateResponse("stock.html", {
-#         "request": request,
-#         "user_id": user_id,
-#         "email": generated_email,
-#         "all_columns": ALL_COLUMNS,
-#         "markets": MARKETS,
-#         "tables": tables_html,
-#         "counts": counts,
-#         "chart_data": chart_data, # Jinja2의 tojson 필터를 쓰기 위해 dict로 전달
-#         "selected_date": target_date,
-#         "selected_market": market
-#     })
-
-Monitoring
+# =====================================================================
+# Stock Monitoring System (신규 추가 구간)
 @api_router.get("/stock", response_class=HTMLResponse)
 async def stock_main(request: Request, user_id: str = Depends(get_current_user)):
     if not user_id:
         return RedirectResponse(url="/login?msg=" + quote("로그인이 필요합니다."), status_code=303)
     
-    generated_email = f"{user_id}{allowed_domain}"
     return templates.TemplateResponse("stock.html", {
         "request": request,
         "user_id": user_id,
-        "email": generated_email,
-        "all_columns": ALL_COLUMNS,
+        "email": f"{user_id}{allowed_domain}",
+        "column_labels": COLUMN_MAP,
         "markets": MARKETS,
-        "tables": {},
         "counts": {"bull": 0, "bear": 0, "sell": 0},
-        "chart_data": "{}",
+        "raw_data": json.dumps({"bull":[], "bear":[], "sell":[]}),
         "selected_date": date.today().isoformat(),
         "selected_market": "KOSPI"
     })
@@ -273,135 +188,99 @@ async def search_stock_data(
     request: Request,
     target_date: str = Form(...),
     market: str = Form(...),
-    selected_cols: List[str] = Form(None),
     user_id: str = Depends(get_current_user)
 ):
-    if not user_id:
-        return RedirectResponse(url="/login?msg=" + quote("로그인이 필요합니다."), status_code=303)
+    if not user_id: return RedirectResponse(url="/login", status_code=303)
     
-    
-    generated_email = f"{user_id}{allowed_domain}"
-    
-    if not selected_cols: selected_cols = ["name", "open", "close", "volume", "RSI"]
-
-    # 종목 코드 매핑 로직
-    stock_map = {}
-    map_file_path = os.path.join(STOCK_LIST_ROOT, market, "stock_list.csv")
-    if os.path.exists(map_file_path):
-        ref_df = pd.read_csv(map_file_path, dtype={'code': str, 'symbol': str})
-        code_col = 'code' if 'code' in ref_df.columns else 'symbol'
-        stock_map = dict(zip(ref_df['name'], ref_df[code_col]))
-
     folder_path = os.path.join(DATA_ROOT_DIR, market, "B1Sheet", target_date)
     data_types = {"bull": "df_bull", "bear": "df_bear", "sell": "df_sell"}
-    tables_html, counts, chart_data = {}, {}, {}
+    raw_data, counts = {}, {}
 
     for key, filename_base in data_types.items():
         file_path = os.path.join(folder_path, f"{filename_base}.csv")
-        chart_data[key] = []
         if os.path.exists(file_path):
             try:
                 df = pd.read_csv(file_path, encoding='utf-8-sig')
-                if set(['name', 'RSI5', 'CCI5']).issubset(df.columns):
-                    chart_data[key] = df[['name', 'RSI5', 'CCI5']].fillna(0).to_dict(orient='records')
-                
-                valid_cols = [c for c in selected_cols if c in df.columns]
-                df_filtered = df[valid_cols].copy()
-                counts[key] = len(df_filtered)
-
-                if 'name' in df_filtered.columns:
-                    def create_link(name):
-                        code = stock_map.get(name)
-                        if not code: return name
-                        base_url = "https://finance.naver.com/item/main.naver?code=" if market in ["KOSPI", "KOSDAQ"] else "https://finance.yahoo.com/quote/"
-                        return f'<a href="{base_url}{code}" target="_blank" style="color: #2563eb; text-decoration: none;">{name}</a>'
-                    df_filtered['name'] = df_filtered['name'].apply(create_link)
-
-                tables_html[key] = df_filtered.to_html(classes="table table-hover table-bordered", index=False, escape=False)
-            except Exception as e:
-                tables_html[key] = f"에러: {str(e)}"
-                counts[key] = 0
+                numeric_cols = ['open', 'close', 'volume']
+                for col in numeric_cols:
+                    if col in df.columns:
+                        df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0).astype(int)
+                raw_data[key] = df.to_dict(orient='records')
+                counts[key] = len(df)
+            except:
+                raw_data[key], counts[key] = [], 0
         else:
-            tables_html[key] = "데이터 없음"
-            counts[key] = 0
+            raw_data[key], counts[key] = [], 0
 
     return templates.TemplateResponse("stock.html", {
         "request": request,
         "user_id": user_id,
-        "email": generated_email,
-        "all_columns": ALL_COLUMNS,
+        "email": f"{user_id}{allowed_domain}",
+        "column_labels": COLUMN_MAP,
         "markets": MARKETS,
-        "tables": tables_html,
+        "raw_data": json.dumps(raw_data),
         "counts": counts,
-        "chart_data": json.dumps(chart_data),
         "selected_date": target_date,
         "selected_market": market
     })
 
+@api_router.get("/api/detail")
+async def get_stock_detail(market: str, name: str):
+    try:
+        path = os.path.join(DATA_ROOT_DIR, market, "A1Sheet")
+        target_file = next((f for f in os.listdir(path) if f.startswith(name)), None)
+        if not target_file: return JSONResponse({"error": "No data found"}, status_code=404)
+        
+        df = pd.read_csv(os.path.join(path, target_file))
+        if 'time_stamp' in df.columns:
+            df['time_stamp_dt'] = pd.to_datetime(df['time_stamp'])
+            max_date = df['time_stamp_dt'].max()
+            start_date = max_date - pd.DateOffset(months=2)
+            filtered_df = df[df['time_stamp_dt'] >= start_date].copy()
+            filtered_df = filtered_df.sort_values(by='time_stamp_dt', ascending=False)
+            filtered_df = filtered_df.drop(columns=['time_stamp_dt'])
+            if filtered_df.columns[0].startswith('Unnamed'): filtered_df = filtered_df.iloc[:, 1:]
+            return filtered_df.to_dict(orient='records')
+        return df.tail(60).iloc[::-1].to_dict(orient='records')
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)
 
-# =====================================================================
-# user list page
 @api_router.get("/users", response_class=HTMLResponse)
 async def list_users(
     request: Request, 
-    msg: Optional[str] = Query(None),  # Optional 및 Query(None) 명시
+    msg: Optional[str] = Query(None), 
     dept: Optional[str] = Query(None), 
     name: Optional[str] = Query(None), 
     user_id: str = Depends(get_current_user)
 ):
     if not user_id:
         return RedirectResponse(url="/login?msg=" + quote("로그인이 필요합니다."), status_code=303)
-    generated_email = f"{user_id}{allowed_domain}"
-    db_handler = UserDBHandler(**DB_CONFIG)
     
-    # DB 핸들러의 execute_select가 dept, name 인자를 받도록 수정되어 있어야 합니다.
+    db_handler = UserDBHandler(**DB_CONFIG)
     success, result = db_handler.execute_select(dept=dept, name=name)
+    table_html = result.to_html(classes='table table-striped table-hover', index=False) if success and result is not None and not result.empty else None
 
-    table_html = None
-    if success:
-        # result가 데이터프레임인지 확인
-        if result is not None and not result.empty:
-            table_html = result.to_html(classes='table table-striped table-hover', index=False)
-        else:
-            if dept or name:
-                msg = "검색 조건에 일치하는 정보가 없습니다."
-            else:
-                msg = "등록된 회원 정보가 없습니다."
-
-    else:
-        msg = f"데이터베이스 에러: {result}"
-        print(msg)
     return templates.TemplateResponse("users.html", {
         "request": request, 
         "table": table_html, 
         "user_id": user_id,
-        "email" : generated_email,
-        "msg": msg
+        "email" : f"{user_id}{allowed_domain}",
+        "msg": msg or ("정보가 없습니다." if not success else None)
     })
 
 # =====================================================================
-# Send Mail page
+# Mail System
 @api_router.get("/mail", response_class=HTMLResponse)
 async def mail_page(request: Request, msg: str = None, user_id: str = Depends(get_current_user)):
-
     if not user_id:
         return RedirectResponse(url="/login?msg=로그인이 필요합니다.", status_code=303)
-    generated_email = f"{user_id}{allowed_domain}"
-    return templates.TemplateResponse("mail.html", {"request": request, "msg": msg, "user_id": user_id, "email" : generated_email})
+    return templates.TemplateResponse("mail.html", {"request": request, "msg": msg, "user_id": user_id, "email" : f"{user_id}{allowed_domain}"})
 
 @api_router.post("/send_mail")
-async def send_mail(
-    receiver: str = Form(...),
-    subject: str = Form(...),
-    content: str = Form(...),
-    user_id: str = Depends(get_current_user)
-):
-    if not user_id:
-        return RedirectResponse(url="/login?msg=로그인이 필요합니다.", status_code=303)
+async def send_mail(receiver: str = Form(...), subject: str = Form(...), content: str = Form(...), user_id: str = Depends(get_current_user)):
+    if not user_id: return RedirectResponse(url="/login", status_code=303)
     generated_email = f"{user_id}{allowed_domain}"
     try:
-
-        # 메일 객체 생성 및 발송 (기존 로직 동일)
         message = MIMEMultipart()
         message["From"] = generated_email
         message["To"] = receiver
@@ -410,135 +289,25 @@ async def send_mail(
         with smtplib.SMTP(MAIL_CONFIG["MAIL_SERVER_IP"], MAIL_CONFIG["MAIL_SEND_PORT"]) as server:
             server.send_message(message)
 
-        # --- 수정된 저장 로직: Content 추가 ---
         sent_file = os.path.join(SENT_MAIL_PATH, f"{user_id}")
         with open(sent_file, "a", encoding="utf-8-sig") as f:
-            f.write(f"To: {receiver}\n")
-            f.write(f"Subject: {subject}\n")
-            f.write(f"Date: {pd.Timestamp.now()}\n")
-            f.write(f"Content: {content}\n") # 본문 추가
-            f.write("---\n") # 구분자
+            f.write(f"To: {receiver}\nSubject: {subject}\nDate: {pd.Timestamp.now()}\nContent: {content}\n---\n")
         return RedirectResponse(url="/mail?msg=메일 발송 성공!", status_code=303)
     except Exception as e:
-        return RedirectResponse(url=f"/mail?msg=메일 발송 실패: {str(e)}", status_code=303)
+        return RedirectResponse(url=f"/mail?msg=실패: {str(e)}", status_code=303)
 
-# =====================================================================
-# Inbox page
 @api_router.get("/inbox", response_class=HTMLResponse)
 async def inbox_page(request: Request, user_id: str = Depends(get_current_user)):
-    if not user_id:
-        return RedirectResponse(url="/login?msg=로그인이 필요합니다.", status_code=303)
-    generated_email = f"{user_id}{allowed_domain}"
+    if not user_id: return RedirectResponse(url="/login", status_code=303)
     mail_handler = UserMAILHandler(**MAIL_CONFIG)
-
-    # NFS 파일에서 직접 읽기
     success, emails = mail_handler.get_mail_from_nfs(user_id=user_id, INBOX_BASE_PATH=INBOX_BASE_PATH)
-
-    return templates.TemplateResponse("inbox.html", {
-        "request": request, 
-        "user_id": user_id, 
-        "emails": emails if success else [],
-        "msg": None if success else emails,
-        "generated_email" : generated_email
-    })
-
-
+    return templates.TemplateResponse("inbox.html", {"request": request, "user_id": user_id, "emails": emails if success else [], "generated_email" : f"{user_id}{allowed_domain}"})
 
 # =====================================================================
-# Sent page
-@api_router.get("/sent", response_class=HTMLResponse)
-async def sent_page(request: Request, user_id: str = Depends(get_current_user)):
-    if not user_id:
-        return RedirectResponse(url="/login?msg=로그인이 필요합니다.", status_code=303)
-    generated_email = f"{user_id}{allowed_domain}"
-    sent_emails = []
-    sent_file = os.path.join(SENT_MAIL_PATH, f"{user_id}")
-
-    if os.path.exists(sent_file):
-        try:
-            with open(sent_file, "r", encoding="utf-8-sig") as f:
-                content_all = f.read().strip()
-                if content_all:
-                    # '---' 구분자로 메일 단위 분리
-                    mail_blocks = content_all.split("---\n")
-                    for block in mail_blocks:
-                        if not block.strip(): continue
-                        lines = block.strip().split("\n")
-                        email_item = {
-                            "to": "알 수 없음",
-                            "subject": "(제목 없음)",
-                            "date": "-",
-                            "content": "", # 본문 필드 추가
-                            "status": "성공"
-                        }
-
-                        # 각 줄을 돌며 데이터 파싱
-                        for line in lines:
-                            if line.startswith("To: "):
-                                email_item["to"] = line.replace("To: ", "").strip()
-                            elif line.startswith("Subject: "):
-                                email_item["subject"] = line.replace("Subject: ", "").strip()
-                            elif line.startswith("Date: "):
-                                email_item["date"] = line.replace("Date: ", "").strip()[:19]
-                            elif line.startswith("Content: "):
-                                # Content: 이후의 모든 내용을 가져옴
-                                email_item["content"] = line.replace("Content: ", "").strip()  
-                        sent_emails.append(email_item)
-            sent_emails.reverse()
-        except Exception as e:
-            print(f"발신함 로드 중 오류 발생: {e}")
-
-    return templates.TemplateResponse("sent.html", {
-        "request": request, 
-        "user_id": user_id,
-        "generated_email" : generated_email,
-        "emails": sent_emails
-    })
-
-# =====================================================================
-# Delete page
-@api_router.get("/delete", response_class=HTMLResponse)
-async def delete_page(request: Request, msg: str = None, user_id: str = Depends(get_current_user)):
-    if not user_id:
-        return RedirectResponse(url="/login?msg=로그인이 필요합니다.", status_code=303)
-    return templates.TemplateResponse("delete.html", {"request": request, "msg": msg})
-
-@api_router.post("/delete")
-async def delete_user(
-    user_id_cookie: str = Depends(get_current_user),
-    user_id: str = Form(...), 
-    password: str = Form(...), 
-    emp_number: str = Form(...)):
-    if not user_id_cookie:
-        return RedirectResponse(url="/login?msg=로그인이 필요합니다.", status_code=303)
-    mail_handler = UserMAILHandler(**MAIL_CONFIG)
-    
-    # 메일 서버에 계정 삭제 요청 먼저 수행
-    mail_success = mail_handler.del_mail_user(user_id, password)
-    if not mail_success:
-        # 메일 삭제이 실패하면 DB에서 빼지 않고 즉시 리턴
-        message = quote("삭제 실패!")
-        return RedirectResponse(url=f"/?msg={message}", status_code=303)
-
-    if mail_success:
-        db_handler = UserDBHandler(**DB_CONFIG, inputData=(user_id, password, emp_number))
-        success, message = db_handler.execute_delete()
-    return RedirectResponse(url=f"/delete?msg={message}", status_code=303)
-
-# =====================================================================
-
-# Logout
-@api_router.get("/logout")
-async def logout():
-    """쿠키를 삭제하여 로그아웃 처리"""
-    message = quote("로그아웃 되었습니다.")
-    # 로그인 페이지로 리다이렉트하면서 쿠키 삭제
-    response = RedirectResponse(url=f"/login?msg={message}", status_code=303)
-    response.delete_cookie(key="user_id")
-    return response
 
 app.include_router(api_router)
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=8000)
+    # 외부 접속 허용을 위해 0.0.0.0, 로컬은 127.0.0.1
+    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
