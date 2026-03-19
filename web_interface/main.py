@@ -168,7 +168,87 @@ async def create_user(
     # 결과 페이지로 리다이렉트
     return RedirectResponse(url=f"/insert?msg={message}", status_code=303)
 
-# Monitoring
+# @api_router.get("/stock", response_class=HTMLResponse)
+# async def stock_main(request: Request, user_id: str = Depends(get_current_user)):
+#     if not user_id:
+#         return RedirectResponse(url="/login?msg=" + quote("로그인이 필요합니다."), status_code=303)
+    
+#     generated_email = f"{user_id}{allowed_domain}"
+    
+#     # [중요] 초기 진입 시에도 모든 변수를 빈 구조로 넘겨서 Jinja2 에러 방지
+#     return templates.TemplateResponse("stock.html", {
+#         "request": request,
+#         "user_id": user_id,
+#         "email": generated_email,
+#         "all_columns": ALL_COLUMNS,
+#         "markets": MARKETS,
+#         "tables": {"bull": "", "bear": "", "sell": ""},
+#         "counts": {"bull": 0, "bear": 0, "sell": 0}, 
+#         "chart_data": {"bull": [], "bear": [], "sell": []}, # JSON 직렬화 전 딕셔너리
+#         "selected_date": date.today().isoformat(),
+#         "selected_market": "KOSPI"
+#     })
+
+# @api_router.post("/stock", response_class=HTMLResponse)
+# async def search_stock_data(
+#     request: Request,
+#     target_date: str = Form(...),
+#     market: str = Form(...),
+#     selected_cols: List[str] = Form(None),
+#     user_id: str = Depends(get_current_user)
+# ):
+#     if not user_id:
+#         return RedirectResponse(url="/login?msg=" + quote("로그인이 필요합니다."), status_code=303)
+    
+#     generated_email = f"{user_id}{allowed_domain}"
+#     if not selected_cols: selected_cols = ["name", "open", "close", "volume", "RSI"]
+
+#     # (중략: stock_map 생성 로직 동일)
+
+#     folder_path = os.path.join(DATA_ROOT_DIR, market, "B1Sheet", target_date)
+#     data_types = {"bull": "df_bull", "bear": "df_bear", "sell": "df_sell"}
+    
+#     tables_html = {}
+#     counts = {"bull": 0, "bear": 0, "sell": 0}
+#     chart_data = {"bull": [], "bear": [], "sell": []}
+
+#     for key, filename_base in data_types.items():
+#         file_path = os.path.join(folder_path, f"{filename_base}.csv")
+#         if os.path.exists(file_path):
+#             try:
+#                 df = pd.read_csv(file_path, encoding='utf-8-sig')
+#                 # 전체 데이터를 저장 (나중에 JS에서 상세 보기용으로 사용)
+#                 chart_data[key] = df.fillna(0).to_dict(orient='records')
+                
+#                 valid_cols = [c for c in selected_cols if c in df.columns]
+#                 df_filtered = df[valid_cols].copy()
+#                 counts[key] = len(df_filtered)
+
+#                 # 종목명 링크 생성 (생략 가능하면 기존 로직 유지)
+#                 if 'name' in df_filtered.columns:
+#                     # (기존 네이버/야후 링크 생성 로직)
+#                     pass
+
+#                 tables_html[key] = df_filtered.to_html(classes="table table-hover table-bordered", index=False, escape=False)
+#             except Exception as e:
+#                 tables_html[key] = f"에러: {str(e)}"
+#         else:
+#             tables_html[key] = "데이터 없음"
+
+#     return templates.TemplateResponse("stock.html", {
+#         "request": request,
+#         "user_id": user_id,
+#         "email": generated_email,
+#         "all_columns": ALL_COLUMNS,
+#         "markets": MARKETS,
+#         "tables": tables_html,
+#         "counts": counts,
+#         "chart_data": chart_data, # Jinja2의 tojson 필터를 쓰기 위해 dict로 전달
+#         "selected_date": target_date,
+#         "selected_market": market
+#     })
+
+Monitoring
 @api_router.get("/stock", response_class=HTMLResponse)
 async def stock_main(request: Request, user_id: str = Depends(get_current_user)):
     if not user_id:
