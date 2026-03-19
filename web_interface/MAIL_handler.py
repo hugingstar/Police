@@ -1,6 +1,7 @@
 import socket
 import mailbox
 import os
+from email.header import decode_header, make_header
 
 class UserMAILHandler():
     def __init__(self, 
@@ -49,42 +50,52 @@ class UserMAILHandler():
             return False
 
     def get_mail_from_nfs(self, user_id, INBOX_BASE_PATH):
-
         messages = []
-
-        # Inbox directory
         mail_file = os.path.join(INBOX_BASE_PATH, user_id)
         
         if not os.path.exists(mail_file):
-            return True, [] # 사서함 파일이 없으면 빈 목록 반환
+            return True, []
 
         try:
-            # mailbox
             mbox = mailbox.mbox(mail_file)
-            
-            # Latest mail 10
             keys = list(mbox.keys())
+            
             for key in reversed(keys[-10:]):
                 msg = mbox[key]
                 
-                # Text extraction
+                # Decoding
+                def safe_decode_header(header_value):
+                    if not header_value:
+                        return ""
+                    # RFC 2047 
+                    return str(make_header(decode_header(header_value)))
+
+                subject = safe_decode_header(msg['subject'])
+                sender = safe_decode_header(msg['from'])
+
+                # 본문
                 content = ""
                 if msg.is_multipart():
                     for part in msg.walk():
                         if part.get_content_type() == "text/plain":
-                            content = part.get_payload(decode=True).decode(errors='ignore')
+                            # charset  (utf-8)
+                            charset = part.get_content_charset() or 'utf-8'
+                            payload = part.get_payload(decode=True)
+                            content = payload.decode(charset, errors='ignore')
                             break
                 else:
-                    content = msg.get_payload(decode=True).decode(errors='ignore')
+                    charset = msg.get_content_charset() or 'utf-8'
+                    payload = msg.get_payload(decode=True)
+                    content = payload.decode(charset, errors='ignore')
 
-                # Mail contents
                 messages.append({
                     "index": key,
-                    "from": msg['from'],
-                    "subject": msg['subject'],
+                    "from": sender,
+                    "subject": subject,
                     "date": msg['date'],
                     "content": content
                 })
+                
             return True, messages
         
         except Exception as e:

@@ -325,8 +325,8 @@ async def send_mail(
         message = MIMEMultipart()
         message["From"] = generated_email
         message["To"] = receiver
-        message["Subject"] = subject
-        message.attach(MIMEText(content, "plain"))
+        message["Subject"] = Header(subject, "utf-8").encode()
+        message.attach(MIMEText(content, "plain", "utf-8"))
         with smtplib.SMTP(MAIL_CONFIG["MAIL_SERVER_IP"], MAIL_CONFIG["MAIL_SEND_PORT"]) as server:
             server.send_message(message)
 
