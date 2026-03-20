@@ -40,6 +40,13 @@ ansible-playbook nfs.yaml -K
 - 수정 후 업데이트
 git pull origin jjh
 
+### 직접 exports수정 
+```
+- mail 수신 경로 정확히 입력 후 exports 수정 
+/var/spool/mail *(rw,sync,no_root_squash,no_subtree_check)
+exportfs -ra
+```
+
 1. DNS 설정
 2. 메일 패키지 설치
 3. Sendmail 설정 업데이트 (.mc 수정 및 .cf 생성)

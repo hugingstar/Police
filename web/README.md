@@ -73,3 +73,14 @@ kubectl get po,svc,deploy -n web
 ```
 kubectl delete -f <파일명>.yaml --force --grace-period=0
 ```
+
+에러 확인
+```
+kubectl describe pod [안 뜨는 파드 이름] -n web
+kubectl logs [안 뜨는 파드 이름] -n web
+```
+
+설정 재반영
+kubectl rollout restart deployment web-service -n web
+coreDNS확인
+kubectl get pods -n kube-system -l k8s-app=kube-dns
