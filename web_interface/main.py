@@ -127,6 +127,89 @@ async def login(user_id: str = Form(...), password: str = Form(...)):
         error_msg = quote(str(result))
         return RedirectResponse(url=f"/login?msg={error_msg}", status_code=303)
 
+# =====================================================================
+# Sent page
+@api_router.get("/sent", response_class=HTMLResponse)
+async def sent_page(request: Request, user_id: str = Depends(get_current_user)):
+    if not user_id:
+        return RedirectResponse(url="/login?msg=로그인이 필요합니다.", status_code=303)
+    generated_email = f"{user_id}{allowed_domain}"
+    sent_emails = []
+    sent_file = os.path.join(SENT_MAIL_PATH, f"{user_id}")
+
+    if os.path.exists(sent_file):
+        try:
+            with open(sent_file, "r", encoding="utf-8-sig") as f:
+                content_all = f.read().strip()
+                if content_all:
+                    # '---' 구분자로 메일 단위 분리
+                    mail_blocks = content_all.split("---\n")
+                    for block in mail_blocks:
+                        if not block.strip(): continue
+                        lines = block.strip().split("\n")
+                        email_item = {
+                            "to": "알 수 없음",
+                            "subject": "(제목 없음)",
+                            "date": "-",
+                            "content": "", # 본문 필드 추가
+                            "status": "성공"
+                        }
+
+                        # 각 줄을 돌며 데이터 파싱
+                        for line in lines:
+                            if line.startswith("To: "):
+                                email_item["to"] = line.replace("To: ", "").strip()
+                            elif line.startswith("Subject: "):
+                                email_item["subject"] = line.replace("Subject: ", "").strip()
+                            elif line.startswith("Date: "):
+                                email_item["date"] = line.replace("Date: ", "").strip()[:19]
+                            elif line.startswith("Content: "):
+                                # Content: 이후의 모든 내용을 가져옴
+                                email_item["content"] = line.replace("Content: ", "").strip()  
+                        sent_emails.append(email_item)
+            sent_emails.reverse()
+        except Exception as e:
+            print(f"발신함 로드 중 오류 발생: {e}")
+
+    return templates.TemplateResponse("sent.html", {
+        "request": request, 
+        "user_id": user_id,
+        "generated_email" : generated_email,
+        "emails": sent_emails
+    })
+
+# =====================================================================
+# Delete page
+@api_router.get("/delete", response_class=HTMLResponse)
+async def delete_page(request: Request, msg: str = None, user_id: str = Depends(get_current_user)):
+    if not user_id:
+        return RedirectResponse(url="/login?msg=로그인이 필요합니다.", status_code=303)
+    return templates.TemplateResponse("delete.html", {"request": request, "msg": msg})
+
+@api_router.post("/delete")
+async def delete_user(
+    user_id_cookie: str = Depends(get_current_user),
+    user_id: str = Form(...), 
+    password: str = Form(...), 
+    emp_number: str = Form(...)):
+    if not user_id_cookie:
+        return RedirectResponse(url="/login?msg=로그인이 필요합니다.", status_code=303)
+    mail_handler = UserMAILHandler(**MAIL_CONFIG)
+    
+    # 메일 서버에 계정 삭제 요청 먼저 수행
+    mail_success = mail_handler.del_mail_user(user_id, password)
+    if not mail_success:
+        # 메일 삭제이 실패하면 DB에서 빼지 않고 즉시 리턴
+        message = quote("삭제 실패!")
+        return RedirectResponse(url=f"/?msg={message}", status_code=303)
+
+    if mail_success:
+        db_handler = UserDBHandler(**DB_CONFIG, inputData=(user_id, password, emp_number))
+        success, message = db_handler.execute_delete()
+    return RedirectResponse(url=f"/delete?msg={message}", status_code=303)
+
+# =====================================================================
+# Logout
 @api_router.get("/logout")
 async def logout():
     message = quote("로그아웃 되었습니다.")
@@ -182,7 +265,7 @@ async def create_user(
     return RedirectResponse(url=f"/insert?msg={message}", status_code=303)
 
 # =====================================================================
-# Stock Monitoring System (신규 추가 구간)
+# Stock Monitoring System
 @api_router.get("/stock", response_class=HTMLResponse)
 async def stock_main(request: Request, user_id: str = Depends(get_current_user)):
     if not user_id:
