@@ -1,4 +1,5 @@
 venv
 .vscode
 Data
-.backup
+backup
+__pycache__
